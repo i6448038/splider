@@ -13,7 +13,7 @@ import (
 
 func main() {
 	value:=make(map[string]string)
-	file,err:=os.Open("conf/splider.conf")
+	file,err:=os.Open("splider.conf")
 	defer file.Close()
 	if err !=nil  {
 		panic(err)
