@@ -9,6 +9,9 @@ import (
 	"strings"
 	"os"
 	"errors"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 
 func main() {
@@ -22,35 +25,44 @@ func main() {
 	for{
 		line,flag,_:=buff.ReadLine()
 		valueArray:=strings.Split(string(line), "=")
+		//一行中如果用 = 分开后得到多个数据，则不符合规范。
 		if(len(valueArray) == 2){
 			value[valueArray[0]]=valueArray[1]
 		}else {
-			panic(errors.New("conf 文件格式"))
+			panic(errors.New("conf 文件格式不正确"))
 		}
 		if flag == false{
 			break
 		}
 	}
-	//getHtmlData("http://www.soufang.com")
+	if value["url"] == ""{
+		panic(errors.New("url不合法！"))
+	}
+	getHtmlData(value["url"])
 }
 
 func getHtmlData(url string) {
-	doc, err := goquery.NewDocument(url)
+	doc, err := goquery.NewDocument(strings.Trim(url, "\"\""))
 	if err != nil {
 		panic(err)
 	}
+	var urls []string
 	doc.Find("body").Each(func(i int, s *goquery.Selection) {
-		fmt.Println(i)
 		labelA := s.Find("a").Nodes
-		var urls []string
-		for _,value:= range labelA{
-			for _,value1 := range value.Attr{
-				if value1.Key == "href"{
-					urls = append(urls, value1.Val)
+		for _,attributes:= range labelA{
+			for _,attr := range attributes.Attr{
+				if attr.Key == "href"{
+					if(!strings.Contains(attr.Val, "javascript")&&attr.Val!="/"){
+						urls = append(urls, attr.Val)
+					}
 				}
 			}
 		}
-		fmt.Println(urls)
 	})
+	fmt.Println(urls)
+}
+
+func dbConnection(){
+	db, err := gorm.Open("mysql", "root:@/urls?charset=utf8&parseTime=True&loc=Local")
 }
 
