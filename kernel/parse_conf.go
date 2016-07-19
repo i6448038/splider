@@ -13,11 +13,21 @@ var (
 	//PrimaryProperty = []string{"url"}
 	Property   = map[string]string{
 		"url":"",
+		"resource":"img",
+		"path":"/Downloads",
 	}
 )
-
+//获取索要访问的路径
 func GetURL() string{
 	return Property["url"]
+}
+//获取资源的类型
+func GetResource() string{
+	return Property["resource"]
+}
+//获取资源的存放路径
+func GetPath() string{
+	return Property["path"]
 }
 
 func Parse(){
