@@ -16,6 +16,7 @@ import (
 	"fmt"
 	"net/http"
 	"io/ioutil"
+	"os"
 )
 
 var (
@@ -52,23 +53,31 @@ func getHtmlData(url string) {
 			panic(errors.New("配置文件出错！"))
 		}
 		switch resource {
-		case "img":
+		case "img":downloadImg(resource, kernal.GetPath(), s)
 		}
 	})
 
 }
 
-//func downloadImg(resourceType string, path string, s *goquery.Selection){
-//	imgs := s.Find("img").Nodes
-//	for _,attributes:= range imgs{
-//		for _,attr := range attributes.Attr{
-//			if attr.Key == "src"{
-//				resp,_:=http.Get(attr.Val)
-//				image,_:=ioutil.ReadAll(resp.Body)
-//
-//				ioutil.WriteFile(path+"/"+kernal.GetRandomString(10))
-//			}
-//		}
-//	}
-//}
+func downloadImg(resourceType string, path string, s *goquery.Selection){
+	imgs := s.Find("img").Nodes
+	for _,attributes:= range imgs{
+		for _,attr := range attributes.Attr{
+			if attr.Key == "src" && attr.Val != "true"{
+				url := "http:"+attr.Val
+				postfix:=strings.SplitAfter(attr.Val, ".")
+				resp,error:=http.Get(url)
+				if error != nil{
+					panic(errors.New(error.Error()))
+				}
+				image,_:=ioutil.ReadAll(resp.Body)
+				error = ioutil.WriteFile(path+"/"+kernal.GetRandomString(10)+"."+postfix[len(postfix)-1], image, os.ModePerm)
+				fmt.Println(path+"/"+kernal.GetRandomString(10)+"."+postfix[len(postfix)-1])
+				if error!=nil{
+					panic(errors.New(error.Error()))
+				}
+			}
+		}
+	}
+}
 

@@ -14,7 +14,7 @@ var (
 	Property   = map[string]string{
 		"url":"",
 		"resource":"img",
-		"path":"/Downloads",
+		"path":"OK",
 	}
 )
 //获取索要访问的路径
@@ -27,7 +27,8 @@ func GetResource() string{
 }
 //获取资源的存放路径
 func GetPath() string{
-	return Property["path"]
+	os.MkdirAll(GetRootPath()+Property["path"], 0777)
+	return GetRootPath()+Property["path"]
 }
 
 func Parse(){

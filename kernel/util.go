@@ -5,6 +5,10 @@ import (
 	"math/rand"
 	//"strings"
 	//"fmt"
+	"os/exec"
+	"os"
+	"path/filepath"
+	"strings"
 )
 
 //判断数组中有无此元素
@@ -47,4 +51,19 @@ func ChangeToString(str []string)(result string){
 		result = result+str[i]
 	}
 	return
+}
+//获取当前路径
+func GetRootPath()string{
+	file, _ := exec.LookPath(os.Args[0])
+	path, _ := filepath.Abs(file)
+	path = strings.Replace(path, "\\", "/", -1)
+	pathArray := strings.SplitAfter(path, "/")
+	result := ""
+	//for _,value:=range strings.SplitAfter(path, "/"){
+	//	result = result + value
+	//}
+	for i:=0;i<len(pathArray)-1;i++{
+		result = result + pathArray[i]
+	}
+	return result
 }
