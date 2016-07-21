@@ -33,7 +33,7 @@ func main() {
 
 
 func getHtmlData(url string) {
-	doc, err := goquery.NewDocument(strings.Trim(url, "\"\""))
+	doc, err := goquery.NewDocument(strings.Trim(url, "\"\"\r"))
 	if err != nil {
 		panic(err)
 	}
@@ -48,18 +48,14 @@ func getHtmlData(url string) {
 				}
 			}
 		}
-		resource,ok:= kernal.Property["resource"]
-		if !ok {
-			panic(errors.New("配置文件出错！"))
-		}
-		switch resource {
-		case "img":downloadImg(resource, kernal.GetPath(), s)
+		switch kernal.GetResource() {
+		case "img":downloadImg( kernal.GetPath(), s)
 		}
 	})
 
 }
 
-func downloadImg(resourceType string, path string, s *goquery.Selection){
+func downloadImg( path string, s *goquery.Selection){
 	imgs := s.Find("img").Nodes
 	for _,attributes:= range imgs{
 		for _,attr := range attributes.Attr{

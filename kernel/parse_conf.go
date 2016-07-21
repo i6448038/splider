@@ -2,19 +2,17 @@ package kernal
 
 import (
 	"os"
-	"bufio"
 	"strings"
+	"io/ioutil"
 	"errors"
-	//"fmt"
 )
 
 //conf 文件中必备的项
 var (
-	//PrimaryProperty = []string{"url"}
 	Property   = map[string]string{
 		"url":"",
 		"resource":"img",
-		"path":"OK",
+		"path":"Downloads",
 	}
 )
 //获取索要访问的路径
@@ -32,32 +30,26 @@ func GetPath() string{
 }
 
 func Parse(){
-	file,err:=os.Open("splider.conf")
-	defer file.Close()
+	file,err:=ioutil.ReadFile("splider.conf")
 	if err !=nil  {
-		panic(err)
+		panic(errors.New("读取文件有误！"))
 	}
-	buff:=bufio.NewReader(file)
-	for{
-		line,flag,_:=buff.ReadLine()
-		content:=string(line)
+	fileContent:=string(file)
+	lines:=strings.Split(fileContent, "\n")
+	for i:=0;i<len(lines);i++ {
+		content:=string(lines[i])
 		//如果conf文件的第一个字符不是#注释的话
-		if(content[:1] != "#"){
-			//防止同行出现#号的情况
+		if(len(content)>0 && content[:1] != "#" ){
 			contentArray:=strings.Split(content, "=")
 			//一行中如果用 = 分开后得到多个数据，则不符合规范。
-			if(len(contentArray) == 2){
+			//防止同行出现#号的情况
+			if(len(contentArray) == 2 && !strings.Contains(content, "#")){
 				_, ok:=Property[contentArray[0]]
 				if ok{
 					Property[contentArray[0]] = contentArray[1]
 				}
-			}else {
-				panic(errors.New("conf 文件格式不正确"))
 			}
-			if flag == false{
-				break
-			}
-		}
 
+		}
 	}
 }
