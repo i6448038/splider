@@ -33,7 +33,7 @@ func main() {
 
 
 func getHtmlData(url string) {
-	doc, err := goquery.NewDocument(strings.Trim(url, "\"\"\r"))
+	doc, err := goquery.NewDocument(url)
 	if err != nil {
 		panic(err)
 	}
@@ -59,8 +59,11 @@ func downloadImg( path string, s *goquery.Selection){
 	imgs := s.Find("img").Nodes
 	for _,attributes:= range imgs{
 		for _,attr := range attributes.Attr{
-			if attr.Key == "src" && attr.Val != "true"{
-				url := "http:"+attr.Val
+			if attr.Key == "src" && attr.Val != "true" && len(attr.Val) > 0{
+				url := attr.Val
+				if !strings.Contains(attr.Val, "http"){
+					url = kernal.GetURL()+attr.Val
+				}
 				postfix:=strings.SplitAfter(attr.Val, ".")
 				resp,error:=http.Get(url)
 				if error != nil{

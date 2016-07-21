@@ -46,7 +46,13 @@ func Parse(){
 			if(len(contentArray) == 2 && !strings.Contains(content, "#")){
 				_, ok:=Property[contentArray[0]]
 				if ok{
-					Property[contentArray[0]] = strings.Trim(contentArray[1], "\"\"\r")
+					value:=strings.Trim(contentArray[1], "\"\"\r")
+					if contentArray[0] == "url"{
+						if !strings.Contains(value, "http://"){
+							value = "http://"+value
+						}
+					}
+					Property[contentArray[0]] = value
 				}
 			}
 
