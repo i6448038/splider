@@ -46,7 +46,7 @@ func Parse(){
 			if(len(contentArray) == 2 && !strings.Contains(content, "#")){
 				_, ok:=Property[contentArray[0]]
 				if ok{
-					Property[contentArray[0]] = contentArray[1]
+					Property[contentArray[0]] = strings.Trim(contentArray[1], "\"\"\r")
 				}
 			}
 
