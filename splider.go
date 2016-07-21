@@ -28,6 +28,7 @@ func init(){
 }
 
 func main() {
+	fmt.Println(kernal.GetURL())
 	getHtmlData(kernal.GetURL())
 }
 
@@ -58,6 +59,7 @@ func getHtmlData(url string) {
 func downloadImg( path string, s *goquery.Selection){
 	imgs := s.Find("img").Nodes
 	for _,attributes:= range imgs{
+		fmt.Println(imgs)
 		for _,attr := range attributes.Attr{
 			if attr.Key == "src" && attr.Val != "true" && len(attr.Val) > 0{
 				url := attr.Val

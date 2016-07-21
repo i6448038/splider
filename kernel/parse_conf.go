@@ -5,6 +5,7 @@ import (
 	"strings"
 	"io/ioutil"
 	"errors"
+	//"fmt"
 )
 
 //conf 文件中必备的项
@@ -37,12 +38,10 @@ func Parse(){
 	fileContent:=string(file)
 	lines:=strings.Split(fileContent, "\n")
 	for i:=0;i<len(lines);i++ {
-		content:=string(lines[i])
+		content:=strings.Trim(string(lines[i]), "/\"\"\r")
 		//如果conf文件的第一个字符不是#注释的话
 		if(len(content)>0 && content[:1] != "#" ){
-			contentArray:=strings.Split(content, "=")
-			//一行中如果用 = 分开后得到多个数据，则不符合规范。
-			//防止同行出现#号的情况
+			contentArray:=strings.SplitN(content, "=", 2)
 			if(len(contentArray) == 2 && !strings.Contains(content, "#")){
 				_, ok:=Property[contentArray[0]]
 				if ok{
