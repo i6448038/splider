@@ -10,26 +10,43 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"splider/kernel"
 	"errors"
-	//"github.com/jinzhu/gorm"
 	//"net/http"
-	//"io/ioutil"
 	"fmt"
 	"net/http"
 	"io/ioutil"
 	"os"
+	//"sync"
 )
 
 var (
 	URL []string
+	URLChannel chan string
 )
 
 func init(){
 	kernal.Parse()
+	URLChannel = make(chan string, 1024)
 }
 
 func main() {
-	fmt.Println(kernal.GetURL())
-	getHtmlData(kernal.GetURL())
+	for {
+		//通过主URL获得众多子URL
+		URL = append(URL, kernal.GetURL())
+		for key, value := range URL {
+			URL = append(URL[:key])
+			go getHtmlData(value)
+		}
+		for _, value := range URLChannel {
+			resp, ok := <-value
+			if ok{
+				URL = append(URL, resp)
+			}
+
+		}
+		if len(URL) == 0 {
+			break
+		}
+	}
 }
 
 
@@ -44,7 +61,8 @@ func getHtmlData(url string) {
 			for _,attr := range attributes.Attr{
 				if attr.Key == "href"{
 					if(!strings.Contains(attr.Val, "javascript")&&attr.Val!="/"){
-						URL = append(URL, attr.Val)
+						URLChannel <- (string)(attr.Val)
+
 					}
 				}
 			}
@@ -59,21 +77,20 @@ func getHtmlData(url string) {
 func downloadImg( path string, s *goquery.Selection){
 	imgs := s.Find("img").Nodes
 	for _,attributes:= range imgs{
-		fmt.Println(imgs)
 		for _,attr := range attributes.Attr{
 			if attr.Key == "src" && attr.Val != "true" && len(attr.Val) > 0{
 				url := attr.Val
 				if !strings.Contains(attr.Val, "http"){
 					url = kernal.GetURL()+attr.Val
 				}
-				postfix:=strings.SplitAfter(attr.Val, ".")
+				postfix:=strings.SplitAfter(attr.Val, "/")
 				resp,error:=http.Get(url)
 				if error != nil{
 					panic(errors.New(error.Error()))
 				}
 				image,_:=ioutil.ReadAll(resp.Body)
-				error = ioutil.WriteFile(path+"/"+kernal.GetRandomString(10)+"."+postfix[len(postfix)-1], image, os.ModePerm)
-				fmt.Println(path+"/"+kernal.GetRandomString(10)+"."+postfix[len(postfix)-1])
+				error = ioutil.WriteFile(path+"/"+postfix[len(postfix)-1], image, os.ModePerm)
+				fmt.Println(path+"/"+postfix[len(postfix)-1])
 				if error!=nil{
 					panic(errors.New(error.Error()))
 				}
