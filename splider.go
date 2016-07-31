@@ -15,37 +15,39 @@ import (
 	"net/http"
 	"io/ioutil"
 	"os"
-	//"sync"
+	"sync"
+	"container/list"
 )
 
 var (
-	URL []string
-	URLChannel chan string
+	URL list.List
+	lock sync.RWMutex
+	//URLChannel chan string
 )
 
 func init(){
 	kernal.Parse()
-	URLChannel = make(chan string, 1024)
+	//URLChannel = make(chan string, 1024)
+	URL.PushBack(kernal.Property["url"])
 }
 
 func main() {
-	for {
-		//通过主URL获得众多子URL
-		URL = append(URL, kernal.GetURL())
-		for key, value := range URL {
-			URL = append(URL[:key])
-			go getHtmlData(value)
-		}
-		for _, value := range URLChannel {
-			resp, ok := <-value
-			if ok{
-				URL = append(URL, resp)
+	var poolCount int
+	for e := URL.Front(); e != nil; e = e.Next() {
+		if poolCount<20 {
+			url,ok := (e.Value).(string)
+			if ok {
+				lock.Lock()
+				URL.Remove(e)
+				lock.Unlock()
+				go getHtmlData(url)
 			}
+		}
+		poolCount++
+	}
 
-		}
-		if len(URL) == 0 {
-			break
-		}
+	for URL.Front() != nil{
+
 	}
 }
 
@@ -61,8 +63,9 @@ func getHtmlData(url string) {
 			for _,attr := range attributes.Attr{
 				if attr.Key == "href"{
 					if(!strings.Contains(attr.Val, "javascript")&&attr.Val!="/"){
-						URLChannel <- (string)(attr.Val)
-
+						lock.Lock()
+						URL.PushBack((string)(attr.Val))
+						lock.Unlock()
 					}
 				}
 			}
