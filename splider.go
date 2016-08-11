@@ -18,6 +18,7 @@ import (
 	"sync"
 	"container/list"
 	"time"
+	"strconv"
 )
 
 var (
@@ -35,7 +36,12 @@ func init(){
 func main() {
 	var poolCount int
 	ThreadLoop:for e := URL.Front(); e != nil; e = e.Next() {
-		if poolCount<500 {
+		num,_:=kernal.Property["goroutineNum"]
+		goroutineNums ,err := strconv.Atoi(num)
+		if err!=nil {
+			goroutineNums = 20
+		}
+		if poolCount < goroutineNums {
 			url,ok := (e.Value).(string)
 			if ok {
 				lock.Lock()

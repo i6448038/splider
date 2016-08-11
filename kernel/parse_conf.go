@@ -14,6 +14,7 @@ var (
 		"url":"",
 		"resource":"img",
 		"path":"Downloads",
+		"goroutineNum":"20",
 	}
 )
 //获取索要访问的路径
