@@ -17,6 +17,7 @@ import (
 	"os"
 	"sync"
 	"container/list"
+	"time"
 )
 
 var (
@@ -33,8 +34,8 @@ func init(){
 
 func main() {
 	var poolCount int
-	for e := URL.Front(); e != nil; e = e.Next() {
-		if poolCount<20 {
+	ThreadLoop:for e := URL.Front(); e != nil; e = e.Next() {
+		if poolCount<500 {
 			url,ok := (e.Value).(string)
 			if ok {
 				lock.Lock()
@@ -47,8 +48,10 @@ func main() {
 	}
 
 	for URL.Front() != nil{
-
+		time.Sleep(3*time.Second)
+		goto ThreadLoop
 	}
+	time.Sleep(10*time.Second)
 }
 
 
