@@ -21,7 +21,7 @@ var (
 func GetURL() string{
 	return Property["url"]
 }
-//获取资源的类型
+//获取资源的类型(图片还是其他)
 func GetResource() string{
 	return Property["resource"]
 }

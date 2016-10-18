@@ -32,19 +32,6 @@ func GetRandomString(lens int)(result string){
 	return
 }
 
-//把一个字符串顺序打乱
-//func Random(str string)string{
-//	var result [len(str)]string
-//	index:=rand.Intn(len(str)-1)
-//	rand.Perm([]int{1,2})
-//	if result[index] == ""{
-//
-//	}
-//	for key,value:=range str{
-//
-//	}
-//}
-
 //字符串数组 变为字符串
 func ChangeToString(str []string)(result string){
 	for i:=0;i < len(str)-1; i++{
@@ -59,9 +46,6 @@ func GetRootPath()string{
 	path = strings.Replace(path, "\\", "/", -1)
 	pathArray := strings.SplitAfter(path, "/")
 	result := ""
-	//for _,value:=range strings.SplitAfter(path, "/"){
-	//	result = result + value
-	//}
 	for i:=0;i<len(pathArray)-1;i++{
 		result = result + pathArray[i]
 	}
