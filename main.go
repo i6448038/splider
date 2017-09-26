@@ -7,8 +7,16 @@ import (
 
 
 func main(){
-	data := new(models.Datas)
+	data := new(models.Crawler)
 	data.Url = "xxxx"
+	data.AnswerCount = 1
+	data.AttentionCount = 10
+	data.Img = "zzzz"
+	data.Desc = "dsafdsa"
+	data.Tags = "xcvczxvcxzv"
+	data.PageView = 123112321
+	data.Origin = 1
+
 	num, err := models.Engine.Insert(data)
 	if err != nil{
 		fmt.Println("插入数据有误", ":", err.Error())

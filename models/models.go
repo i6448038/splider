@@ -9,10 +9,18 @@ import (
 
 var Engine *xorm.Engine
 
-type Datas struct {
-	Id  int32  `xorm:"autoincr"`
-	Url string `xorm:"varchar(11) null"`
-	CreatedAt time.Time `xorm:"TIMESTAMP null"`
+type Crawler struct {
+	Id  int  `xorm:"autoincr"`
+	Url string `xorm:"null"`
+	Title string `xorm:"null"`
+	Desc string `xorm:"TEXT"`
+	Img string `xorm:"null"`
+	Tags string `xorm:"null"`
+	AnswerCount int `xorm:"null"`
+	AttentionCount int `xorm:"null"`
+	PageView int `xorm:"null"`
+	Origin int `xorm:"TINYINT"`
+	CreatedAt time.Time `xorm:"TIMESTAMP created"`
 }
 
 
@@ -23,7 +31,7 @@ func init(){
 		panic(err)
 	}
 	engine.SetMaxOpenConns(20)
-	err = engine.Sync2(new(Datas))
+	err = engine.Sync2(new(Crawler))
 	if err != nil{
 		panic(err)
 	}
