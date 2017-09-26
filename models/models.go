@@ -2,9 +2,9 @@ package models
 
 import (
 	"github.com/go-xorm/xorm"
-	"fmt"
 	"time"
 	_ "github.com/go-sql-driver/mysql"
+	"splider/config"
 )
 
 var Engine *xorm.Engine
@@ -17,16 +17,15 @@ type Datas struct {
 
 
 func init(){
-	var err error
-	Engine, err = xorm.NewEngine("mysql", "root:homestead@tcp(127.0.0.1:3306)/pholcus")
+	engine, err := xorm.NewEngine("mysql", config.DBconfig["user"] + ":" + config.DBconfig["pwd"] +
+		"@tcp("+ config.DBconfig["local"] + ":" + config.DBconfig["port"] +")/" + config.DBconfig["db_name"])
 	if err != nil{
-		fmt.Println(err.Error())
-		return
+		panic(err)
 	}
-	Engine.SetMaxOpenConns(20)
-	err = Engine.Sync2(new(Datas))
+	engine.SetMaxOpenConns(20)
+	err = engine.Sync2(new(Datas))
 	if err != nil{
-		fmt.Println(err.Error())
-		return
+		panic(err)
 	}
+	Engine = engine
 }

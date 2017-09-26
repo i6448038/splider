@@ -5,6 +5,7 @@ import (
 	"splider/models"
 )
 
+
 func main(){
 	data := new(models.Datas)
 	data.Url = "xxxx"
