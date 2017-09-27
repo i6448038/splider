@@ -1,4 +1,4 @@
-package splider_lib
+package spider_lib
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 
 var data []string
 
-func ZhihuDayhot(){
+func ZhihuDayhot(channel chan <- string){
 
 	defer func(){
 		if p := recover(); p != nil{
@@ -29,7 +29,6 @@ func ZhihuDayhot(){
 
 	data = nextPage("15", nextPage("10", nextPage("5", data)))
 
-	fmt.Println(data)
 }
 
 func nextPage(offset string, data []string)[]string{

@@ -1,4 +1,4 @@
-package splider_lib
+package spider_lib
 
 import (
 	"fmt"

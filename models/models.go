@@ -13,15 +13,19 @@ type Crawler struct {
 	Id  int  `xorm:"autoincr"`
 	Url string `xorm:"null"`
 	Title string `xorm:"null"`
-	Desc string `xorm:"TEXT"`
+	Desc string `xorm:"VARCHAR(3000) null"`
 	Img string `xorm:"null"`
 	Tags string `xorm:"null"`
 	AnswerCount int `xorm:"null"`
 	AttentionCount int `xorm:"null"`
-	PageView int `xorm:"null"`
-	Origin int `xorm:"TINYINT"`
-	CreatedAt time.Time `xorm:"TIMESTAMP created"`
+	Ext string `xorm:"VARCHAR(3000) null"`
+	Pv int `xorm:"null"`
+	From int `xorm:"TINYINT(1)"`
+	Ctime time.Time `xorm:"TIMESTAMP created"`
 }
+
+const ZHIHU = 1
+const WUKONG = 2
 
 
 func init(){
