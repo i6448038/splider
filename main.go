@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"splider/spider_lib"
+	."splider/spider_lib"
 	."splider/models"
 )
 
@@ -11,13 +11,13 @@ import (
 func main(){
 	 channel := make(chan []*Crawler)
 
-	go spider_lib.ZhiHuBianJi(channel)
-	go spider_lib.ZhihuDayhot(channel)
-	//go send(channel,"1a")
+	go ZhiHuBianJi(channel)
+	go ZhihuDayhot(channel)
+	go ZhihuMonthlyhot(channel)
 	//go send(channel,"1b")
 	//go send(channel,"1c")
 
-	for i:=0; i < 1; i++{
+	for i:=0; i < 3; i++{
 		msg := <-channel
 		for _, v := range msg{
 			num, err := Engine.Insert(v)
