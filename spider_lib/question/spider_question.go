@@ -4,7 +4,21 @@ import (
 	."splider/models"
 	"github.com/PuerkitoBio/goquery"
 	"strconv"
+	"regexp"
 )
+
+
+//过滤掉不符合要求的url
+func FilterURLs(urls []string)[]string{
+	var res []string
+	for _, url := range urls{
+		if regexp.MustCompile(`^https:\/\/www\.zhihu\.com\/question\/\d{1,}\/answer\/\d{1,}$`).MatchString(url){
+			res = append(res, url)
+		}
+	}
+	return res
+}
+
 
 //解析知乎最主要的问题页
 func PaserZhihuQuestion(url string)(*Crawler, error){

@@ -1,38 +1,43 @@
 package spider_lib
 
 import (
-	"fmt"
 	"github.com/PuerkitoBio/goquery"
+	."splider/models"
+	."splider/spider_lib/question"
+	."splider/helper"
 )
-
-var data []string
-
-func ZhihuDayhot(channel chan <- string){
-
-	defer func(){
-		if p := recover(); p != nil{
-			fmt.Println("存在错误！")
-		}
-	}()
-
+func ZhihuDayhot(channel chan <- []*Crawler){
 	doc, err := goquery.NewDocument("https://www.zhihu.com/explore#daily-hot")
 
 	if err != nil{
 		panic(err.Error())
 	}
 
+	var urlList []string
 	doc.Find("[data-type='daily'] .explore-feed.feed-item h2 a").Each(func(i int, selection *goquery.Selection) {
-
-		url, _ := selection.Attr("href")
-		data = append(data, selection.Text() + "  " + url)
+		url, isExist := selection.Attr("href")
+		if isExist{
+			urlList = append(urlList, url)
+		}
 	})
 
-	data = nextPage("15", nextPage("10", nextPage("5", data)))
+	urlList = nextPage("15", nextPage("10", nextPage("5", urlList)))
+
+	var data []*Crawler
+
+	for _, url := range FilterURLs(ChangeToAbspath(urlList, "https://www.zhihu.com")){
+		crawlerData, err := PaserZhihuQuestion(url)
+		if err == nil{
+			data = append(data, crawlerData)
+		}
+	}
+
+	channel <- data
 
 }
 
 func nextPage(offset string, data []string)[]string{
-	doc, err := goquery.NewDocument(`https://wwws.zhihu.com/node/ExploreAnswerListV2?params={"offset":` + offset + `,"type":"day"}`)
+	doc, err := goquery.NewDocument(`https://www.zhihu.com/node/ExploreAnswerListV2?params={"offset":` + offset + `,"type":"day"}`)
 
 	if err != nil{
 		panic(err.Error())
@@ -41,7 +46,7 @@ func nextPage(offset string, data []string)[]string{
 
 	doc.Find(".explore-feed.feed-item h2 a").Each(func(i int, selection *goquery.Selection) {
 		url, _ := selection.Attr("href")
-		data = append(data, selection.Text() + "  " + url)
+		data = append(data, url)
 
 	})
 	return data
