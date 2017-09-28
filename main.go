@@ -10,16 +10,20 @@ import (
 
 func main(){
 
+	defer func(){
+		if p := recover(); p != nil{
+			fmt.Println(p)
+		}
+	}()
 
-	 channel := make(chan []*Crawler)
+	channel := make(chan []*Crawler)
 
-	//go ZhiHuBianJi(channel)
-	//go ZhihuDayhot(channel)
-	//go ZhihuMonthlyhot(channel)
+	go ZhiHuBianJi(channel)
+	go ZhihuDayhot(channel)
+	go ZhihuMonthlyhot(channel)
 	go ZhihuTopic(channel)
-	//go send(channel,"1c")
 
-	for i:=0; i < 1; i++{
+	for i:=0; i < 4; i++{
 		msg := <-channel
 		for _, v := range msg{
 			_, err := Engine.Insert(v)
