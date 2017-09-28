@@ -1,86 +1,166 @@
 package spider_lib
 
 import (
-	"fmt"
 	"github.com/PuerkitoBio/goquery"
+	."splider/models"
+	."splider/helper"
+	."splider/spider_lib/question"
+	"net/http"
+	. "net/url"
+	"io/ioutil"
+	"encoding/json"
+	"strings"
 )
 
 var topicMap = map[string]string{
 	"游戏":"19550994",
-	"运动":"19552706",
-	"互联网":"19550517",
-	"艺术":"19550434",
-	"阅读":"19550564",
-	"美食":"19551137",
-	"动漫":"19591985",
-	"汽车":"19551915",
-	"生活方式":"19555513",
-	"教育":"19553176",
-	"历史":"19551077",
-	"文化":"19552266",
-	"旅行":"19551556",
-	"职业发展":"19554825",
-	"足球":"19559052",
-	"篮球":"19562832",
-	"音乐":"19550453",
-	"电影":"19550429",
-	"法律":"19550874",
-	"自然科学":"19553298",
-	"设计":"19551557",
-	"健康":"19550937",
-	"商业":"19555457",
-	"体育":"19554827",
-	"科技":"19556664",
-	"金融":"19609455",
+	//"运动":"19552706",
+	//"互联网":"19550517",
+	//"艺术":"19550434",
+	//"阅读":"19550564",
+	//"美食":"19551137",
+	//"动漫":"19591985",
+	//"汽车":"19551915",
+	//"生活方式":"19555513",
+	//"教育":"19553176",
+	//"历史":"19551077",
+	//"文化":"19552266",
+	//"旅行":"19551556",
+	//"职业发展":"19554825",
+	//"足球":"19559052",
+	//"篮球":"19562832",
+	//"音乐":"19550453",
+	//"电影":"19550429",
+	//"法律":"19550874",
+	//"自然科学":"19553298",
+	//"设计":"19551557",
+	//"健康":"19550937",
+	//"商业":"19555457",
+	//"体育":"19554827",
+	//"科技":"19556664",
+	//"金融":"19609455",
 }
 
 var topicSpecial = map[string]string{
-	"投资":"19551404",
-	"创业":"19550560",
+	//"投资":"19551404",
+	//"创业":"19550560",
 }
 
-var ch = make(chan map[string][]string)
+func ZhihuTopic(channel chan <- []*Crawler){
 
-func ZhihuTopic(){
+	resultUrls := make(chan []string)
 
-	var resultMap = make(map[string][]string)
-
-	for k, v := range topicMap{
+	for _, v := range topicMap{
 		url := "https://www.zhihu.com/topic/"+ v +"/hot"
-		go parser(url, k)
+		go parser(url, resultUrls)
 	}
 
-	for k, v := range topicSpecial{
+	for _, v := range topicSpecial{
 		url := "https://www.zhihu.com/topic/"+ v +"/top-answers"
-		go parser(url, k)
+		go parser(url, resultUrls)
 	}
 
 
+	var data []*Crawler
 	for i := 0; i < len(topicMap) + len(topicSpecial); i++{
-		temp := make(map[string][]string)
-		temp = <-ch
-		for k , v := range temp{
-			resultMap[k] = v
+		urls := <- resultUrls
+		for _ , url := range FilterURLs(ChangeToAbspath(urls, "https://www.zhihu.com")){
+			crawlerData, err := PaserZhihuQuestion(url)
+			if err == nil{
+				data = append(data, crawlerData)
+			}
 		}
 	}
 
-	fmt.Println(resultMap)
+	channel <- data
 }
 
-func parser(url, topicType string){
-	doc, err := goquery.NewDocument(url)
-	tempMap := make(map[string][]string)
-	var dataArray []string
+func parser(url string, urls chan <- []string){
+	body, err := goquery.NewDocument(url)
 	if err != nil{
-		//todo 打印log
-		return
+		panic(err)
 	}
 
-	doc.Find(".feed-item.feed-item-hook h2 a").
+	var urlList []string
+	feedItems := body.Find(".feed-item.feed-item-hook")
+
+	feedItems.Find("h2 a").
 		Each(func(i int, selection *goquery.Selection) {
-		url, _ := selection.Attr("href")
-		dataArray = append(dataArray, selection.Text() + "\n" + url)
+		url, isExist := selection.Attr("href")
+
+		if isExist{
+			urlList = append(urlList, url)
+		}
 	})
-	tempMap[topicType] = dataArray
-	ch <- tempMap
+
+	for len(urlList) < 20{
+		feedItems= next6Page(url, feedItems)
+
+		feedItems.Find(".feed-item.feed-item-hook h2 a").Each(func(i int, selection *goquery.Selection) {
+			url, isExist := selection.Attr("href")
+
+			if isExist{
+				urlList = append(urlList, url)
+			}
+		})
+
+	}
+
+	//urlList = RemoveDuplicates(urlList)
+
+	urls <- urlList
+}
+
+func next6Page(url string, document *goquery.Selection)*goquery.Selection{
+	offset, isExist := document.Last().Attr("data-score")
+
+	if !isExist{
+		panic("获取下一页出问题")
+	}
+
+	formData := make(Values)
+
+	formData["start"] = []string{"0"}
+	formData["offset"] = []string{offset}
+
+	resp, error := http.PostForm(url, formData)
+
+	if error != nil{
+		panic(error)
+	}
+
+	content, error := ioutil.ReadAll(resp.Body)
+
+	if error != nil {
+		panic(error)
+	}
+
+
+	type Items struct {
+		R int `json:"r"`
+		Msg []interface{} `json:"msg"`
+	}
+
+	e := new(Items)
+
+	error = json.Unmarshal(content, e)
+
+
+	if error != nil{
+		panic(error)
+	}
+
+	html, ok := e.Msg[1].(string)
+
+	if !ok {
+		panic("强制类型转换失败")
+	}
+
+	respBody, error := goquery.NewDocumentFromReader(strings.NewReader(html))
+
+	if error != nil{
+		panic(error)
+	}
+
+	return respBody.Find(".feed-item.feed-item-hook")
 }
