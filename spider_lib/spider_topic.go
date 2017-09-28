@@ -13,9 +13,9 @@ import (
 )
 
 var topicMap = map[string]string{
-	"游戏":"19550994",
+	//"游戏":"19550994",
 	//"运动":"19552706",
-	//"互联网":"19550517",
+	"互联网":"19550517",
 	//"艺术":"19550434",
 	//"阅读":"19550564",
 	//"美食":"19551137",
@@ -81,6 +81,10 @@ func parser(url string, urls chan <- []string){
 		panic(err)
 	}
 
+	fmt.Println(body.Text())
+
+	fmt.Println(len(body.Text()))
+
 	var urlList []string
 	feedItems := body.Find(".feed-item.feed-item-hook")
 
@@ -94,6 +98,7 @@ func parser(url string, urls chan <- []string){
 	})
 
 	for len(urlList) < 20{
+
 		feedItems= next6Page(url, feedItems)
 
 		feedItems.Find(".feed-item.feed-item-hook h2 a").Each(func(i int, selection *goquery.Selection) {
