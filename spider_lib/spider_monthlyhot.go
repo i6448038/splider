@@ -5,6 +5,7 @@ import (
 	."splider/models"
 	."splider/spider_lib/question"
 	."splider/helper"
+	"fmt"
 )
 
 
@@ -18,6 +19,7 @@ func ZhihuMonthlyhot(channel chan <- []*Crawler){
 	var urlList []string
 	doc.Find("[data-type='monthly'] .explore-feed.feed-item h2 a").Each(func(i int, selection *goquery.Selection) {
 		url, isExist := selection.Attr("href")
+		fmt.Println(url)
 		if isExist{
 			urlList = append(urlList, url)
 		}

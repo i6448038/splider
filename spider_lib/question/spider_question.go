@@ -5,6 +5,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"strconv"
 	"regexp"
+	"fmt"
 )
 
 
@@ -22,6 +23,7 @@ func FilterURLs(urls []string)[]string{
 
 //解析知乎最主要的问题页
 func PaserZhihuQuestion(url string)(*Crawler, error){
+	fmt.Println(url)
 	crawlerData := new(Crawler)
 	body, err := goquery.NewDocument(url)
 

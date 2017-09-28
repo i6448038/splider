@@ -5,6 +5,7 @@ import (
 	."splider/models"
 	."splider/helper"
 	."splider/spider_lib/question"
+	"fmt"
 )
 
 
@@ -20,6 +21,7 @@ func ZhiHuBianJi(channel chan <- []*Crawler){
 		Each(func(i int, selection *goquery.Selection) {
 		url, isExist := selection.Attr("href")
 
+		fmt.Println(url)
 		if isExist{
 			urlList = append(urlList, url)
 		}

@@ -21,9 +21,9 @@ func main(){
 	go ZhiHuBianJi(channel)
 	go ZhihuDayhot(channel)
 	go ZhihuMonthlyhot(channel)
-	go ZhihuTopic(channel)
+	//go ZhihuTopic(channel)
 
-	for i:=0; i < 4; i++{
+	for i:=0; i < 3; i++{
 		msg := <-channel
 		for _, v := range msg{
 			_, err := Engine.Insert(v)

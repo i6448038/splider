@@ -5,6 +5,7 @@ import (
 	."splider/models"
 	."splider/spider_lib/question"
 	."splider/helper"
+	"fmt"
 )
 func ZhihuDayhot(channel chan <- []*Crawler){
 	doc, err := goquery.NewDocument("https://www.zhihu.com/explore#daily-hot")
@@ -16,6 +17,7 @@ func ZhihuDayhot(channel chan <- []*Crawler){
 	var urlList []string
 	doc.Find("[data-type='daily'] .explore-feed.feed-item h2 a").Each(func(i int, selection *goquery.Selection) {
 		url, isExist := selection.Attr("href")
+		fmt.Println(url)
 		if isExist{
 			urlList = append(urlList, url)
 		}
