@@ -5,11 +5,11 @@ import (
 	."splider/models"
 	."splider/helper"
 	."splider/spider_lib/question"
-	"net/http"
-	. "net/url"
 	"io/ioutil"
 	"encoding/json"
 	"strings"
+	"time"
+	"fmt"
 )
 
 var topicMap = map[string]string{
@@ -104,6 +104,7 @@ func parser(url string, urls chan <- []string){
 			}
 		})
 
+		time.Sleep(time.Second)
 	}
 
 	//urlList = RemoveDuplicates(urlList)
@@ -112,22 +113,14 @@ func parser(url string, urls chan <- []string){
 }
 
 func next6Page(url string, document *goquery.Selection)*goquery.Selection{
+
 	offset, isExist := document.Last().Attr("data-score")
 
 	if !isExist{
 		panic("获取下一页出问题")
 	}
 
-	formData := make(Values)
-
-	formData["start"] = []string{"0"}
-	formData["offset"] = []string{offset}
-
-	resp, error := http.PostForm(url, formData)
-
-	if error != nil{
-		panic(error)
-	}
+	resp := Post(url, offset)
 
 	content, error := ioutil.ReadAll(resp.Body)
 
