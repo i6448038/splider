@@ -8,7 +8,7 @@ import (
 	"io/ioutil"
 	"encoding/json"
 	"strings"
-	"time"
+	"fmt"
 )
 
 var topicMap = map[string]string{
@@ -47,45 +47,54 @@ var topicSpecial = map[string]string{
 
 func ZhihuTopic(channel chan <- []*Crawler){
 
-	resultUrls := make(chan []string)
-
 	for _, v := range topicMap{
+		var data []*Crawler
 		url := "https://www.zhihu.com/topic/"+ v +"/hot"
-		go parser(url, resultUrls)
-	}
-
-	for _, v := range topicSpecial{
-		url := "https://www.zhihu.com/topic/"+ v +"/top-answers"
-		go parser(url, resultUrls)
-	}
-
-
-	var data []*Crawler
-	for i := 0; i < len(topicMap) + len(topicSpecial); i++{
-		urls := <- resultUrls
+		urls := parser(url)
 		for _ , url := range FilterURLs(ChangeToAbspath(urls, "https://www.zhihu.com")){
 			crawlerData, err := PaserZhihuQuestion(url)
 			if err == nil{
 				data = append(data, crawlerData)
 			}
 		}
+		channel <- data
 	}
 
-	channel <- data
+	for _, v := range topicSpecial{
+		var data []*Crawler
+		url := "https://www.zhihu.com/topic/"+ v +"/top-answers"
+		urls := parser(url)
+		for _ , url := range FilterURLs(ChangeToAbspath(urls, "https://www.zhihu.com")){
+			crawlerData, err := PaserZhihuQuestion(url)
+			if err == nil{
+				data = append(data, crawlerData)
+			}
+		}
+		channel <- data
+	}
+
+
 }
 
-func parser(url string, urls chan <- []string){
+func parser(url string)[]string{
 
 	body, err := goquery.NewDocument(url)
 
 	if err != nil{
+
 		panic(err)
 	}
 
 	var urlList []string
 	feedItems := body.Find(".feed-item.feed-item-hook")
 
-	feedItems.Find("h2 a").
+	itmes := feedItems.Find("h2 a")
+
+	if len(itmes.Nodes) == 0 {
+		panic("取值错误")
+	}
+
+	itmes.
 		Each(func(i int, selection *goquery.Selection) {
 		url, isExist := selection.Attr("href")
 
@@ -94,9 +103,8 @@ func parser(url string, urls chan <- []string){
 		}
 	})
 
-	time.Sleep(time.Second)
-
 	for len(urlList) < 20{
+		//time.Sleep(time.Second)
 
 		feedItems= next6Page(url, feedItems)
 
@@ -107,13 +115,10 @@ func parser(url string, urls chan <- []string){
 				urlList = append(urlList, url)
 			}
 		})
-
-		time.Sleep(time.Second)
 	}
 
 	//urlList = RemoveDuplicates(urlList)
-
-	urls <- urlList
+	return urlList
 }
 
 func next6Page(url string, document *goquery.Selection)*goquery.Selection{
@@ -121,12 +126,17 @@ func next6Page(url string, document *goquery.Selection)*goquery.Selection{
 	offset, isExist := document.Last().Attr("data-score")
 
 	if !isExist{
+		if len(document.Text()) == 0{
+			fmt.Println("空白页!")
+		}
 		panic("获取下一页出问题")
 	}
 
 	resp := Post(url, offset)
 
 	content, error := ioutil.ReadAll(resp.Body)
+
+	defer resp.Body.Close()
 
 	if error != nil {
 		panic(error)

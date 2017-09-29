@@ -28,19 +28,15 @@ func login(req *http.Request)*http.Request{
 
 
 func Post(url, offset string) *http.Response{
-	req, err := http.NewRequest("POST", url, strings.NewReader(Values{"start":{"0"}, "offset":{offset}}.Encode()))
+	ht := &http.Client{}
+	resp, err := ht.Post(url, "application/x-www-form-urlencoded", strings.NewReader(Values{"start":{"0"}, "offset":{offset}}.Encode()))
 	if err != nil {
 		panic(err)
 	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Set("User-Agent", `Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36`)
-	//req = login(req)
-	resp, error := http.DefaultClient.Do(req)
+	//req.Header.Set("User-Agent", `Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36`)
 
+	//resp, error := ht.Do(req)
 
-	if error != nil{
-		panic(error)
-	}
 	return resp
 }
 

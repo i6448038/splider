@@ -5,7 +5,6 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"strconv"
 	"regexp"
-	"fmt"
 )
 
 
@@ -23,7 +22,6 @@ func FilterURLs(urls []string)[]string{
 
 //解析知乎最主要的问题页
 func PaserZhihuQuestion(url string)(*Crawler, error){
-	fmt.Println(url)
 	crawlerData := new(Crawler)
 	body, err := goquery.NewDocument(url)
 
@@ -46,9 +44,6 @@ func PaserZhihuQuestion(url string)(*Crawler, error){
 
 	crawlerData.Title = headerMain.Find(".QuestionHeader-title").Text()
 
-	//answerCount, _ := body.Find(".Question-main .Card").Attr("data-za-module-info")
-	//crawlerData.AnswerCount = int(answerCount)
-
 	crawlerData.From = ZHIHU
 
 	var tags string
@@ -65,5 +60,6 @@ func PaserZhihuQuestion(url string)(*Crawler, error){
 	crawlerData.Tags = tags
 
 	crawlerData.Desc = headerMain.Find(".QuestionHeader-detail span").Text()
+
 	return crawlerData, nil
 }
