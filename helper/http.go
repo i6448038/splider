@@ -42,11 +42,11 @@ func Post(url, offset string) *http.Response{
 
 
 func Get(url string) *http.Response{
-	req, err := http.NewRequest("Get", url, nil)
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		panic(err)
 	}
-	req.Header.Set("User-Agent", `Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36`)
+	//req.Header.Add("User-Agent", `Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36`)
 
 	resp, error := http.DefaultClient.Do(req)
 

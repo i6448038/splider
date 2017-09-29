@@ -80,7 +80,7 @@ func ExampleParser() {
 			continue
 		}
 
-		fmt.Println("Found question for name", wantName)
+		fmt.Println("Found landing_page for name", wantName)
 		if err := p.SkipAllQuestions(); err != nil {
 			panic(err)
 		}
@@ -127,6 +127,6 @@ func ExampleParser() {
 	fmt.Printf("Found A/AAAA records for name %s: %v\n", wantName, gotIPs)
 
 	// Output:
-	// Found question for name bar.example.com.
+	// Found landing_page for name bar.example.com.
 	// Found A/AAAA records for name bar.example.com.: [127.0.0.2]
 }

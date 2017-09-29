@@ -1136,7 +1136,7 @@ var marshalErrorTests = []struct {
 	},
 	{
 		Value: map[string]string{
-			"question": "What do you get when you multiply six by nine?",
+			"landing_page": "What do you get when you multiply six by nine?",
 			"answer":   "42",
 		},
 		Err:  "xml: unsupported type: map[string]string",

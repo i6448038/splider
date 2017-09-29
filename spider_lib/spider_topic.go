@@ -4,7 +4,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	."splider/models"
 	."splider/helper"
-	."splider/spider_lib/question"
+	."splider/spider_lib/landing_page"
 	"io/ioutil"
 	"encoding/json"
 	"strings"
@@ -51,7 +51,7 @@ func ZhihuTopic(channel chan <- []*Crawler){
 		var data []*Crawler
 		url := "https://www.zhihu.com/topic/"+ v +"/hot"
 		urls := parser(url)
-		for _ , url := range FilterURLs(ChangeToAbspath(urls, "https://www.zhihu.com")){
+		for _ , url := range FilterZhihuURLs(ChangeToAbspath(urls, "https://www.zhihu.com")){
 			crawlerData, err := PaserZhihuQuestion(url)
 			if err == nil{
 				data = append(data, crawlerData)
@@ -64,7 +64,7 @@ func ZhihuTopic(channel chan <- []*Crawler){
 		var data []*Crawler
 		url := "https://www.zhihu.com/topic/"+ v +"/top-answers"
 		urls := parser(url)
-		for _ , url := range FilterURLs(ChangeToAbspath(urls, "https://www.zhihu.com")){
+		for _ , url := range FilterZhihuURLs(ChangeToAbspath(urls, "https://www.zhihu.com")){
 			crawlerData, err := PaserZhihuQuestion(url)
 			if err == nil{
 				data = append(data, crawlerData)

@@ -4,7 +4,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	."splider/models"
 	."splider/helper"
-	."splider/spider_lib/question"
+	."splider/spider_lib/landing_page"
 	"fmt"
 )
 
@@ -29,7 +29,7 @@ func ZhiHuBianJi(channel chan <- []*Crawler){
 
 	var data []*Crawler
 
-	for _, url := range FilterURLs(ChangeToAbspath(urlList, "https://www.zhihu.com")){
+	for _, url := range FilterZhihuURLs(ChangeToAbspath(urlList, "https://www.zhihu.com")){
 		crawlerData, err := PaserZhihuQuestion(url)
 		if err == nil{
 			data = append(data, crawlerData)

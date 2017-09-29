@@ -1,4 +1,4 @@
-package question
+package landing_page
 
 import (
 	."splider/models"
@@ -9,10 +9,10 @@ import (
 
 
 //过滤掉不符合要求的url
-func FilterURLs(urls []string)[]string{
+func FilterZhihuURLs(urls []string)[]string{
 	var res []string
 	for _, url := range urls{
-		if regexp.MustCompile(`^https:\/\/www\.zhihu\.com\/question\/\d{1,}(\/answer\/\d{1,})?$`).MatchString(url){
+		if regexp.MustCompile(`^https:\/\/www\.zhihu\.com\/landing_page\/\d{1,}(\/answer\/\d{1,})?$`).MatchString(url){
 			res = append(res, url)
 		}
 	}
