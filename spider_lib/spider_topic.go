@@ -77,6 +77,7 @@ func ZhihuTopic(channel chan <- []*Crawler){
 }
 
 func parser(url string)[]string{
+	fmt.Println(url)
 
 	body, err := goquery.NewDocument(url)
 

@@ -41,22 +41,11 @@ func PaserWukongQuestion(url string)(*Crawler, error){
 	questionMain.Find(".question-img-preview .image-box img").
 		Each(func(i int, selection *goquery.Selection) {
 		img, _:=selection.Attr("src")
-		img = helper.GetAbspath(img, "https://www.wukong.com")
+		img = helper.GetAbspath(img, "https:")
 		imgList = append(imgList, img)
 	})
 
-	var img string
-
-	for _, v := range imgList{
-		if len(img) == 0{
-			img = v
-		}else{
-			img = img + " " + v
-		}
-
-	}
-
-	crawlerData.Img = img
+	crawlerData.Img = imgList
 
 	crawlerData.Desc = questionMain.Find(".question-text").Text()
 
