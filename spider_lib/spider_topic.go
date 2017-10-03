@@ -51,6 +51,7 @@ func ZhihuTopic(channel chan <- []*Crawler){
 		var data []*Crawler
 		url := "https://www.zhihu.com/topic/"+ v +"/hot"
 		urls := parser(url)
+
 		for _ , url := range FilterZhihuURLs(ChangeToAbspath(urls, "https://www.zhihu.com")){
 			crawlerData, err := PaserZhihuQuestion(url)
 			if err == nil{
@@ -77,7 +78,6 @@ func ZhihuTopic(channel chan <- []*Crawler){
 }
 
 func parser(url string)[]string{
-	fmt.Println(url)
 
 	body, err := goquery.NewDocument(url)
 

@@ -14,7 +14,7 @@ type Crawler struct {
 	Url string `xorm:"null"`
 	Title string `xorm:"null"`
 	Desc string `xorm:"VARCHAR(3000) null"`
-	Img []string `xorm:"null"`
+	Img []string `xorm:'[]'`
 	Tags string `xorm:"null"`
 	AnswerCount int `xorm:"null"`
 	AttentionCount int `xorm:"null"`
