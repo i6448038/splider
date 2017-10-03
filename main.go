@@ -6,8 +6,6 @@ import (
 	."splider/models"
 )
 
-
-
 func main(){
 
 	defer func(){

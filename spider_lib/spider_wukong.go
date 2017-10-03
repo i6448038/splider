@@ -126,6 +126,7 @@ func WukongList(channel chan <- []*Crawler){
 //获取落地页地址
 func getWukongLandingPageUrls(url string, rank bool)[]string{
 	resp := Get(url)
+	defer resp.Body.Close()
 
 	respJson, err:= ioutil.ReadAll(resp.Body)
 

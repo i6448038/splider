@@ -7,7 +7,17 @@ import (
 	"regexp"
 	"strings"
 	"fmt"
+	."splider/helper"
+	 "sync"
+	"time"
 )
+
+var m *sync.Mutex
+var ZhihuFlagCount = 0
+
+func init(){
+	m = new(sync.Mutex)
+}
 
 
 //过滤掉不符合要求的url
@@ -26,7 +36,9 @@ func FilterZhihuURLs(urls []string)[]string{
 func PaserZhihuQuestion(url string)(*Crawler, error){
 	fmt.Println(url)
 	crawlerData := new(Crawler)
-	body, err := goquery.NewDocument(url)
+	resp := Get(url)
+	defer resp.Body.Close()
+	body, err := goquery.NewDocumentFromResponse(resp)
 
 	if err != nil{
 		return crawlerData, err
@@ -94,6 +106,14 @@ func PaserZhihuQuestion(url string)(*Crawler, error){
 	})
 
 	crawlerData.Img = imgs
+
+	m.Lock()
+	ZhihuFlagCount++
+	if ZhihuFlagCount > 300{
+		time.Sleep(10 * time.Second)
+		ZhihuFlagCount = 0
+	}
+	m.Unlock()
 
 	return crawlerData, nil
 }

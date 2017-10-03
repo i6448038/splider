@@ -79,7 +79,10 @@ func ZhihuTopic(channel chan <- []*Crawler){
 
 func parser(url string)[]string{
 
-	body, err := goquery.NewDocument(url)
+	resp := Get(url)
+	defer resp.Body.Close()
+
+	body, err := goquery.NewDocumentFromResponse(resp)
 
 	if err != nil{
 
@@ -105,9 +108,12 @@ func parser(url string)[]string{
 	})
 
 	for len(urlList) < 20{
-		//time.Sleep(time.Second)
 
-		feedItems= next6Page(url, feedItems)
+		if  inSpecialTopics(url){
+			feedItems = nextSpecial19Page(url)
+		}else {
+			feedItems = next6Page(url, feedItems)
+		}
 
 		feedItems.Find(".feed-item.feed-item-hook h2 a").Each(func(i int, selection *goquery.Selection) {
 			url, isExist := selection.Attr("href")
@@ -122,18 +128,18 @@ func parser(url string)[]string{
 	return urlList
 }
 
+//一般领域的翻页
 func next6Page(url string, document *goquery.Selection)*goquery.Selection{
 
 	offset, isExist := document.Last().Attr("data-score")
 
 	if !isExist{
-		if len(document.Text()) == 0{
-			fmt.Println("空白页!")
-		}
 		panic("获取下一页出问题")
 	}
 
 	resp := Post(url, offset)
+
+	defer resp.Body.Close()
 
 	content, error := ioutil.ReadAll(resp.Body)
 
@@ -153,8 +159,9 @@ func next6Page(url string, document *goquery.Selection)*goquery.Selection{
 
 	error = json.Unmarshal(content, e)
 
-
 	if error != nil{
+		fmt.Println(url, offset)
+		fmt.Println(string(content))
 		panic(error)
 	}
 
@@ -171,4 +178,25 @@ func next6Page(url string, document *goquery.Selection)*goquery.Selection{
 	}
 
 	return respBody.Find(".feed-item.feed-item-hook")
+}
+
+func nextSpecial19Page(url string) *goquery.Selection{
+	resp := Get(url + "?page=2")
+	defer resp.Body.Close()
+	body, err := goquery.NewDocumentFromResponse(resp)
+
+	if err != nil{
+		panic(err)
+	}
+	return body.Find("#zh-topic-top-page-list")
+}
+
+func inSpecialTopics(url string)bool{
+	ret := false
+	for _, v := range topicSpecial{
+		if(url == "https://www.zhihu.com/topic/"+ v +"/top-answers"){
+			ret = true
+		}
+	}
+	return ret
 }
