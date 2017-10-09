@@ -30,22 +30,29 @@ func ZhiHuBianJi(channel chan <- []*Crawler){
 		if isExist{
 			urlList = append(urlList, url)
 		}
+		urlList = FilterZhihuURLs(ChangeToAbspath(urlList, "https://www.zhihu.com"))
 	})
 
 	var data []*Crawler
 
 	for i := 1; len(urlList) < 60; i++{
-		offset := strconv.Itoa(i * 20)
+		offset := ""
+		if(i >= 4){
+			offset = strconv.Itoa(i * 20 - 1)
+		}else{
+			offset = strconv.Itoa(i * 20)
+		}
 		nextBianjiPage(offset, "20").Each(func(i int, selection *goquery.Selection) {
 			url, isExist := selection.Attr("href")
 			if isExist{
 				urlList = append(urlList, url)
 			}
 		})
-		fmt.Println(len(urlList))
+		urlList = FilterZhihuURLs(ChangeToAbspath(urlList, "https://www.zhihu.com"))
 	}
 
-	for _, url := range FilterZhihuURLs(ChangeToAbspath(urlList, "https://www.zhihu.com")){
+
+	for _, url := range urlList{
 		crawlerData, err := PaserZhihuQuestion(url)
 		if err == nil{
 			data = append(data, crawlerData)
