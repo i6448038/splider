@@ -7,7 +7,6 @@ import (
 )
 
 func main(){
-
 	defer func(){
 		if p := recover(); p != nil{
 			fmt.Println(p)
@@ -22,7 +21,7 @@ func main(){
 	go ZhihuTopic(channel)
 	go WukongList(channel)
 
-	for i:=0; i < 32; i++{
+	for i:=0; i < 1; i++{
 		msg := <-channel
 		for _, v := range msg{
 			_, err := Engine.Insert(v)
