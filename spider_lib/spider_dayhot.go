@@ -5,6 +5,7 @@ import (
 	."splider/models"
 	."splider/spider_lib/landing_page"
 	."splider/helper"
+	"strconv"
 )
 func ZhihuDayhot(channel chan <- []*Crawler){
 	doc, err := goquery.NewDocument("https://www.zhihu.com/explore#daily-hot")
@@ -19,13 +20,18 @@ func ZhihuDayhot(channel chan <- []*Crawler){
 		if isExist{
 			urlList = append(urlList, url)
 		}
+		urlList = FilterZhihuURLs(ChangeToAbspath(urlList, "https://www.zhihu.com"))
 	})
 
-	urlList = nextPage("15", nextPage("10", nextPage("5", urlList)))
+	for i:=1; len(urlList) < 100; i++{
+		offset := strconv.Itoa(i*5)
+		urlList = append(urlList, FilterZhihuURLs(ChangeToAbspath(nextPage(offset,urlList), "https://www.zhihu.com"))...)
+	}
+
 
 	var data []*Crawler
 
-	for _, url := range FilterZhihuURLs(ChangeToAbspath(urlList, "https://www.zhihu.com")){
+	for _, url := range urlList{
 		crawlerData, err := PaserZhihuQuestion(url)
 		if err == nil{
 			data = append(data, crawlerData)
