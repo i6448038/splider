@@ -9,6 +9,8 @@ import (
 	"encoding/json"
 	"strings"
 	"fmt"
+	"strconv"
+	"time"
 )
 
 var topicMap = map[string]string{
@@ -52,7 +54,7 @@ func ZhihuTopic(channel chan <- []*Crawler){
 		url := "https://www.zhihu.com/topic/"+ v +"/hot"
 		urls := parser(url)
 
-		for _ , url := range FilterZhihuURLs(ChangeToAbspath(urls, "https://www.zhihu.com")){
+		for _ , url := range urls{
 			crawlerData, err := PaserZhihuQuestion(url)
 			if err == nil{
 				data = append(data, crawlerData)
@@ -65,7 +67,7 @@ func ZhihuTopic(channel chan <- []*Crawler){
 		var data []*Crawler
 		url := "https://www.zhihu.com/topic/"+ v +"/top-answers"
 		urls := parser(url)
-		for _ , url := range FilterZhihuURLs(ChangeToAbspath(urls, "https://www.zhihu.com")){
+		for _ , url := range urls{
 			crawlerData, err := PaserZhihuQuestion(url)
 			if err == nil{
 				data = append(data, crawlerData)
@@ -78,14 +80,13 @@ func ZhihuTopic(channel chan <- []*Crawler){
 }
 
 func parser(url string)[]string{
-
+	fmt.Println(url)
 	resp := Get(url)
 	defer resp.Body.Close()
 
 	body, err := goquery.NewDocumentFromResponse(resp)
 
 	if err != nil{
-
 		panic(err)
 	}
 
@@ -95,7 +96,8 @@ func parser(url string)[]string{
 	itmes := feedItems.Find("h2 a")
 
 	if len(itmes.Nodes) == 0 {
-		panic("取值错误")
+		time.Sleep(time.Minute)
+		return parser(url)
 	}
 
 	itmes.
@@ -105,12 +107,13 @@ func parser(url string)[]string{
 		if isExist{
 			urlList = append(urlList, url)
 		}
+		urlList = FilterZhihuURLs(ChangeToAbspath(urlList, "https://www.zhihu.com"))
 	})
 
-	for len(urlList) < 20{
+	for i := 2; len(urlList) < 100; i++{
 
 		if  inSpecialTopics(url){
-			feedItems = nextSpecial19Page(url)
+			feedItems = nextSpecial19Page(strconv.Itoa(i), url)
 		}else {
 			feedItems = next6Page(url, feedItems)
 		}
@@ -122,6 +125,7 @@ func parser(url string)[]string{
 				urlList = append(urlList, url)
 			}
 		})
+		urlList = FilterZhihuURLs(ChangeToAbspath(urlList, "https://www.zhihu.com"))
 	}
 
 	//urlList = RemoveDuplicates(urlList)
@@ -180,8 +184,8 @@ func next6Page(url string, document *goquery.Selection)*goquery.Selection{
 	return respBody.Find(".feed-item.feed-item-hook")
 }
 
-func nextSpecial19Page(url string) *goquery.Selection{
-	resp := Get(url + "?page=2")
+func nextSpecial19Page(page, url string) *goquery.Selection{
+	resp := Get(url + "?page="+page)
 	defer resp.Body.Close()
 	body, err := goquery.NewDocumentFromResponse(resp)
 

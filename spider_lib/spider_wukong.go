@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"encoding/json"
 	"strconv"
+	"fmt"
 )
 
 type wukongResp struct {
@@ -28,7 +29,7 @@ type wukongNormalResp struct {
 
 type wukongRankResp struct {
 	wukongResp
-	RankData []respData `json:"data"`
+	RankData []respData `json:"rank_data"`
 }
 
 type wukongRankData struct {
@@ -61,27 +62,27 @@ type question struct {
 var domains = []string{
 	"6300775428692904450",//热门
 	"6215497896830175745",//娱乐
-	"6215497726554016258",//体育
-	"6215497898671475202",//汽车
-	"6215497899594222081",//科技
-	"6215497900164647426",//育儿
-	"6215497899774577154",//美食
-	"6215497897518041601",//数码
-	"6215497898084272641",//时尚
-	"6215847700051528193",//宠物
-	"6215847700907166210",//收藏
-	"6215497901804620289",//家居
-	"6281512530493835777",//心理
-	"6215497897710979586",//更多 文化
-	"6215847700454181377",//更多 三农
-	"6215497895248923137",//更多 健康
-	"6215848044378720770",//更多 科学
-	"6215497899027991042",//更多 游戏
-	"6215497895852902913",//更多 动漫
-	"6215497897312520705",//更多 教育
-	"6215497899963320834",//更多 职场
-	"6215497897899723265",//更多 旅游
-	"6215497900554717698",//更多 电影
+	//"6215497726554016258",//体育
+	//"6215497898671475202",//汽车
+	//"6215497899594222081",//科技
+	//"6215497900164647426",//育儿
+	//"6215497899774577154",//美食
+	//"6215497897518041601",//数码
+	//"6215497898084272641",//时尚
+	//"6215847700051528193",//宠物
+	//"6215847700907166210",//收藏
+	//"6215497901804620289",//家居
+	//"6281512530493835777",//心理
+	//"6215497897710979586",//更多 文化
+	//"6215847700454181377",//更多 三农
+	//"6215497895248923137",//更多 健康
+	//"6215848044378720770",//更多 科学
+	//"6215497899027991042",//更多 游戏
+	//"6215497895852902913",//更多 动漫
+	//"6215497897312520705",//更多 教育
+	//"6215497899963320834",//更多 职场
+	//"6215497897899723265",//更多 旅游
+	//"6215497900554717698",//更多 电影
 }
 
 const (
@@ -99,18 +100,28 @@ func WukongList(channel chan <- []*Crawler){
 		url := wukong_normal_url + domain + "&t=" +
 			strconv.FormatInt(time.Now().UnixNano()/1e6, 10)
 
-		urlList = append(urlList, getWukongLandingPageUrls(url, false)...)
+		domainUrlList := RemoveDuplicates(getWukongLandingPageUrls(url, false))
 
-		url = wukong_normal_url + domain + "&t=" +
-			strconv.FormatInt(time.Now().UnixNano()/1e6, 10) + strconv.FormatInt(time.Now().Unix(), 10)
+		fmt.Println("domainUrlList len", len(domainUrlList))
+		for len(domainUrlList) < 100 {
+			url = wukong_normal_url + domain + "&t=" +
+				strconv.FormatInt(time.Now().UnixNano()/1e6, 10) + "&max_behot_time=" + strconv.FormatInt(time.Now().Add(-10 *time.Minute).Unix(), 10)
 
-		urlList = append(urlList, getWukongLandingPageUrls(url, true)...)
-
+			domainUrlList = RemoveDuplicates(append(domainUrlList, getWukongLandingPageUrls(url, false)...))
+			fmt.Println("domainUrlList len", len(domainUrlList))
+		}
+		urlList = RemoveDuplicates(append(urlList, domainUrlList...))
 	}
 
 	//解析方式独一无二的精选相关的内容
-	urlList = append(urlList, getWukongLandingPageUrls(getWokongRankUrl(1), true)...)
-	urlList = append(urlList, getWukongLandingPageUrls(getWokongRankUrl(2), true)...)
+	rankUrls := getWukongLandingPageUrls(getWokongRankUrl(1), true)
+	rankUrls = append(rankUrls, getWukongLandingPageUrls(getWokongRankUrl(2), true)...)
+	rankUrls = RemoveDuplicates(rankUrls)
+	fmt.Println("rankUrlList len", len(rankUrls))
+	for i := 3; len(rankUrls) < 100; i++{
+		rankUrls = RemoveDuplicates(append(rankUrls, getWukongLandingPageUrls(getWokongRankUrl(i), true)...))
+	}
+	urlList = RemoveDuplicates(append(urlList, rankUrls...))
 
 	for _, url := range ChangeToAbspath(urlList, "https://www.wukong.com"){
 		crawlerData, err := PaserWukongQuestion(url)
@@ -173,9 +184,9 @@ func getWukongLandingPageUrls(url string, rank bool)[]string{
 //获取精选url，精选的规则和其他领域的不同
 func getWokongRankUrl(page int) string{
 	if page == 1 {
-		return wukong_rankhot_url + strconv.FormatInt(time.Now().UnixNano()/1e6, 10)
+		return wukong_rankhot_url + "&t=" +strconv.FormatInt(time.Now().UnixNano()/1e6, 10)
 	}else{
-		return wukong_rankhot_url + strconv.FormatInt(time.Now().UnixNano()/1e6, 10) +
+		return wukong_rankhot_url + "&t=" + strconv.FormatInt(time.Now().UnixNano()/1e6, 10) +
 			"&new_offset=" + strconv.Itoa(page)
 	}
 }

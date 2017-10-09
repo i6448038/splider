@@ -1,24 +1,22 @@
 package helper
 
-import "fmt"
 
 //删除重复的url
-func RemoveDuplicates(urls []string) []string {
-	ret := urls
-	for k, v := range urls {
-		for ck, cv := range urls{
-			fmt.Print("比", k, v)
-			fmt.Println("\n")
-			fmt.Print("对",ck, cv)
-			fmt.Println("\n")
-			if(v == cv && k != ck){
-				fmt.Println(ret[k:])
-				fmt.Println(ret[k+1:])
-				ret = append(ret[:k], ret[k+1:]...)
+func RemoveDuplicates(list []string) []string {
+	var x []string = []string{}
+	for _, i := range list {
+		if len(x) == 0 {
+			x = append(x, i)
+		} else {
+			for k, v := range x {
+				if i == v {
+					break
+				}
+				if k == len(x)-1 {
+					x = append(x, i)
+				}
 			}
-
 		}
 	}
-
-	return ret
+	return x
 }

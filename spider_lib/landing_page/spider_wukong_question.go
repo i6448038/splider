@@ -31,7 +31,7 @@ func PaserWukongQuestion(url string)(*Crawler, error){
 		crawlerData.Tags = strings.Replace(tags,",","", -1)
 	}
 
-	var imgList []string
+	var imgList = []string{}
 
 	questionMain.Find(".question-img-preview .image-box img").
 		Each(func(i int, selection *goquery.Selection) {
