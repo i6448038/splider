@@ -4,7 +4,6 @@ import (
 	"fmt"
 	."splider/spider_lib"
 	."splider/models"
-	//"os"
 )
 
 func main(){
@@ -16,13 +15,13 @@ func main(){
 
 	channel := make(chan []*Crawler)
 
-	//go ZhiHuBianJi(channel)
-	//go ZhihuDayhot(channel)
-	//go ZhihuMonthlyhot(channel)
-	//go ZhihuTopic(channel)
+	go ZhiHuBianJi(channel)
+	go ZhihuDayhot(channel)
+	go ZhihuMonthlyhot(channel)
+	go ZhihuTopic(channel)
 	go WukongList(channel)
 
-	for i:=0; i < 1; i++{
+	for i := 0; i < 1; i++{
 		msg := <-channel
 		for _, v := range msg{
 			_, err := Engine.Insert(v)

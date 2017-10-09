@@ -30,7 +30,7 @@ func ZhiHuBianJi(channel chan <- []*Crawler){
 		if isExist{
 			urlList = append(urlList, url)
 		}
-		urlList = FilterZhihuURLs(ChangeToAbspath(urlList, "https://www.zhihu.com"))
+		urlList = RemoveDuplicates(FilterZhihuURLs(ChangeToAbspath(urlList, "https://www.zhihu.com")))
 	})
 
 	var data []*Crawler
@@ -48,7 +48,7 @@ func ZhiHuBianJi(channel chan <- []*Crawler){
 				urlList = append(urlList, url)
 			}
 		})
-		urlList = FilterZhihuURLs(ChangeToAbspath(urlList, "https://www.zhihu.com"))
+		urlList = RemoveDuplicates(FilterZhihuURLs(ChangeToAbspath(urlList, "https://www.zhihu.com")))
 	}
 
 

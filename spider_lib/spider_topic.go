@@ -52,7 +52,7 @@ func ZhihuTopic(channel chan <- []*Crawler){
 	for _, v := range topicMap{
 		var data []*Crawler
 		url := "https://www.zhihu.com/topic/"+ v +"/hot"
-		urls := parser(url)
+		urls := RemoveDuplicates(parser(url))
 
 		for _ , url := range urls{
 			crawlerData, err := PaserZhihuQuestion(url)
@@ -66,7 +66,7 @@ func ZhihuTopic(channel chan <- []*Crawler){
 	for _, v := range topicSpecial{
 		var data []*Crawler
 		url := "https://www.zhihu.com/topic/"+ v +"/top-answers"
-		urls := parser(url)
+		urls := RemoveDuplicates(parser(url))
 		for _ , url := range urls{
 			crawlerData, err := PaserZhihuQuestion(url)
 			if err == nil{
@@ -107,7 +107,7 @@ func parser(url string)[]string{
 		if isExist{
 			urlList = append(urlList, url)
 		}
-		urlList = FilterZhihuURLs(ChangeToAbspath(urlList, "https://www.zhihu.com"))
+		urlList = RemoveDuplicates(FilterZhihuURLs(ChangeToAbspath(urlList, "https://www.zhihu.com")))
 	})
 
 	for i := 2; len(urlList) < 100; i++{
@@ -125,7 +125,7 @@ func parser(url string)[]string{
 				urlList = append(urlList, url)
 			}
 		})
-		urlList = FilterZhihuURLs(ChangeToAbspath(urlList, "https://www.zhihu.com"))
+		urlList = RemoveDuplicates(FilterZhihuURLs(ChangeToAbspath(urlList, "https://www.zhihu.com")))
 	}
 
 	//urlList = RemoveDuplicates(urlList)

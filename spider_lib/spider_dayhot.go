@@ -20,12 +20,12 @@ func ZhihuDayhot(channel chan <- []*Crawler){
 		if isExist{
 			urlList = append(urlList, url)
 		}
-		urlList = FilterZhihuURLs(ChangeToAbspath(urlList, "https://www.zhihu.com"))
+		urlList = RemoveDuplicates(FilterZhihuURLs(ChangeToAbspath(urlList, "https://www.zhihu.com")))
 	})
 
 	for i:=1; len(urlList) < 100; i++{
 		offset := strconv.Itoa(i*5)
-		urlList = append(urlList, FilterZhihuURLs(ChangeToAbspath(nextDayhotPage(offset,urlList), "https://www.zhihu.com"))...)
+		urlList = RemoveDuplicates(append(urlList, FilterZhihuURLs(ChangeToAbspath(nextDayhotPage(offset,urlList), "https://www.zhihu.com"))...))
 	}
 
 

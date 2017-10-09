@@ -23,17 +23,17 @@ func ZhihuMonthlyhot(channel chan <- []*Crawler){
 		if isExist{
 			urlList = append(urlList, url)
 		}
-		urlList = FilterZhihuURLs(ChangeToAbspath(urlList, "https://www.zhihu.com"))
+		urlList = RemoveDuplicates(FilterZhihuURLs(ChangeToAbspath(urlList, "https://www.zhihu.com")))
 	})
 
 	for i := 1; len(urlList) < 100; i++{
 		offset := strconv.Itoa(i*5)
-		urlList = append(urlList, FilterZhihuURLs(ChangeToAbspath(nextMonthPage(offset,urlList), "https://www.zhihu.com"))...)
+		urlList = RemoveDuplicates(append(urlList, FilterZhihuURLs(ChangeToAbspath(nextMonthPage(offset,urlList), "https://www.zhihu.com"))...))
 	}
 
 	var data []*Crawler
 
-	for _, url := range FilterZhihuURLs(ChangeToAbspath(urlList, "https://www.zhihu.com")){
+	for _, url := range urlList{
 		crawlerData, err := PaserZhihuQuestion(url)
 		if err == nil{
 			data = append(data, crawlerData)
