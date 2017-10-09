@@ -5,6 +5,7 @@ import (
 	."splider/models"
 	."splider/spider_lib/landing_page"
 	."splider/helper"
+	"strconv"
 )
 
 
@@ -22,9 +23,13 @@ func ZhihuMonthlyhot(channel chan <- []*Crawler){
 		if isExist{
 			urlList = append(urlList, url)
 		}
+		urlList = FilterZhihuURLs(ChangeToAbspath(urlList, "https://www.zhihu.com"))
 	})
 
-	urlList = nextMonthPage("15", nextMonthPage("10", nextMonthPage("5", urlList)))
+	for i := 1; len(urlList) < 100; i++{
+		offset := strconv.Itoa(i*5)
+		urlList = append(urlList, FilterZhihuURLs(ChangeToAbspath(nextMonthPage(offset,urlList), "https://www.zhihu.com"))...)
+	}
 
 	var data []*Crawler
 

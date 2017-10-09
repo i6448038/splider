@@ -25,7 +25,7 @@ func ZhihuDayhot(channel chan <- []*Crawler){
 
 	for i:=1; len(urlList) < 100; i++{
 		offset := strconv.Itoa(i*5)
-		urlList = append(urlList, FilterZhihuURLs(ChangeToAbspath(nextPage(offset,urlList), "https://www.zhihu.com"))...)
+		urlList = append(urlList, FilterZhihuURLs(ChangeToAbspath(nextDayhotPage(offset,urlList), "https://www.zhihu.com"))...)
 	}
 
 
@@ -42,7 +42,7 @@ func ZhihuDayhot(channel chan <- []*Crawler){
 
 }
 
-func nextPage(offset string, data []string)[]string{
+func nextDayhotPage(offset string, data []string)[]string{
 	doc, err := goquery.NewDocument(`https://www.zhihu.com/node/ExploreAnswerListV2?params={"offset":` + offset + `,"type":"day"}`)
 
 	if err != nil{
