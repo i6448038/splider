@@ -67,6 +67,7 @@ func ZhihuTopic(channel chan <- []*Crawler){
 		var data []*Crawler
 		url := "https://www.zhihu.com/topic/"+ v +"/top-answers"
 		urls := RemoveDuplicates(parser(url))
+
 		for _ , url := range urls{
 			crawlerData, err := PaserZhihuQuestion(url)
 			if err == nil{

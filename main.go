@@ -22,10 +22,17 @@ func main(){
 	go WukongList(channel) //23
 
 	for i := 0; i < 54; i++{
-		_, err := Engine.Insert(<-channel)
-		if err != nil{
-			fmt.Println("插入数据有误", ":", err.Error())
-			return
+		datas := <-channel
+		for _, data := range datas{
+			crawler := new(Crawler)
+			Engine.Where("url=?", data.Url).Get(crawler)
+			if crawler.Url == ""{
+				_, err := Engine.InsertOne(data)
+				if err != nil{
+					fmt.Println("插入数据有误", ":", err.Error())
+					return
+				}
+			}
 		}
 	}
 }

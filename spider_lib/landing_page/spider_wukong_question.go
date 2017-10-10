@@ -28,18 +28,18 @@ func PaserWukongQuestion(url string)(*Crawler, error){
 		return crawlerData, err
 	}
 
-	crawlerData.Url = url
+	crawlerData.Url = strings.TrimSpace(url)
 	crawlerData.From = WUKONG
 
 	question := body.Find(".question.question-single")
 	questionMain := question.Find(".question-item")
-	crawlerData.Title = questionMain.Find(".question-name").Text()
+	crawlerData.Title = strings.TrimSpace(questionMain.Find(".question-name").Text())
 	tags, isExist := questionMain.Find(`[itemprop="keywords"]`).Attr("content")
 
 	if !isExist {
 		crawlerData.Tags = tags
 	}else {
-		crawlerData.Tags = strings.Replace(tags,",","", -1)
+		crawlerData.Tags = strings.Replace(tags,","," ", -1)
 	}
 
 	var imgList = []string{}
@@ -52,7 +52,7 @@ func PaserWukongQuestion(url string)(*Crawler, error){
 	})
 
 	crawlerData.Img = imgList
-	crawlerData.Desc = questionMain.Find(".question-text").Text()
+	crawlerData.Desc = strings.TrimSpace(questionMain.Find(".question-text").Text())
 	crawlerData.AttentionCount, err = strconv.Atoi(questionMain.Find(".question-bottom [data-node='followquestion'] .count").Text())
 	if err != nil{
 		time.Sleep(10 * time.Second)
