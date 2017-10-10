@@ -15,64 +15,57 @@ import (
 
 var topicMap = map[string]string{
 	"游戏":"19550994",
-	"运动":"19552706",
-	"互联网":"19550517",
-	"艺术":"19550434",
-	"阅读":"19550564",
-	"美食":"19551137",
-	"动漫":"19591985",
-	"汽车":"19551915",
-	"生活方式":"19555513",
-	"教育":"19553176",
-	"历史":"19551077",
-	"文化":"19552266",
-	"旅行":"19551556",
-	"职业发展":"19554825",
-	"足球":"19559052",
-	"篮球":"19562832",
-	"音乐":"19550453",
-	"电影":"19550429",
-	"法律":"19550874",
-	"自然科学":"19553298",
-	"设计":"19551557",
-	"健康":"19550937",
-	"商业":"19555457",
-	"体育":"19554827",
-	"科技":"19556664",
-	"金融":"19609455",
+	//"运动":"19552706",
+	//"互联网":"19550517",
+	//"艺术":"19550434",
+	//"阅读":"19550564",
+	//"美食":"19551137",
+	//"动漫":"19591985",
+	//"汽车":"19551915",
+	//"生活方式":"19555513",
+	//"教育":"19553176",
+	//"历史":"19551077",
+	//"文化":"19552266",
+	//"旅行":"19551556",
+	//"职业发展":"19554825",
+	//"足球":"19559052",
+	//"篮球":"19562832",
+	//"音乐":"19550453",
+	//"电影":"19550429",
+	//"法律":"19550874",
+	//"自然科学":"19553298",
+	//"设计":"19551557",
+	//"健康":"19550937",
+	//"商业":"19555457",
+	//"体育":"19554827",
+	//"科技":"19556664",
+	//"金融":"19609455",
 }
 
 var topicSpecial = map[string]string{
 	"投资":"19551404",
-	"创业":"19550560",
+	//"创业":"19550560",
 }
 
 func ZhihuTopic(channel chan <- []*Crawler){
 
-	for _, v := range topicMap{
-		var data []*Crawler
-		url := "https://www.zhihu.com/topic/"+ v +"/hot"
-		urls := RemoveDuplicates(parser(url))
+	zhihuTopicChannel := make(chan []string)
 
-		for _ , url := range urls{
-			crawlerData, err := PaserZhihuQuestion(url)
-			if err == nil{
-				data = append(data, crawlerData)
-			}
-		}
-		channel <- data
+	for _, v := range topicMap{
+		url := "https://www.zhihu.com/topic/"+ v +"/hot"
+		go crawZhihuTopic(url, zhihuTopicChannel)
 	}
 
 	for _, v := range topicSpecial{
-		var data []*Crawler
 		url := "https://www.zhihu.com/topic/"+ v +"/top-answers"
-		urls := RemoveDuplicates(parser(url))
+		go crawZhihuTopic(url, zhihuTopicChannel)
+	}
 
-		for _ , url := range urls{
-			crawlerData, err := PaserZhihuQuestion(url)
-			if err == nil{
-				data = append(data, crawlerData)
-			}
+	for i:= 0; i < len(topicMap) + len(topicSpecial); i++{
+		var data []*Crawler
+		urls := <-zhihuTopicChannel
+		for _, url := range urls{
+			data = append(data, PaserZhihuQuestion(url))
 		}
 		channel <- data
 	}
@@ -165,9 +158,8 @@ func next6Page(url string, document *goquery.Selection)*goquery.Selection{
 	error = json.Unmarshal(content, e)
 
 	if error != nil{
-		fmt.Println(url, offset)
-		fmt.Println(string(content))
-		panic(error)
+		time.Sleep(time.Minute)
+		return next6Page(url, document)
 	}
 
 	html, ok := e.Msg[1].(string)
@@ -204,4 +196,9 @@ func inSpecialTopics(url string)bool{
 		}
 	}
 	return ret
+}
+
+
+func crawZhihuTopic(url string, channl chan <- []string){
+	channl <- RemoveDuplicates(parser(url))
 }

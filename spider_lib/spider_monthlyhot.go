@@ -34,10 +34,7 @@ func ZhihuMonthlyhot(channel chan <- []*Crawler){
 	var data []*Crawler
 
 	for _, url := range urlList{
-		crawlerData, err := PaserZhihuQuestion(url)
-		if err == nil{
-			data = append(data, crawlerData)
-		}
+		data = append(data, PaserZhihuQuestion(url))
 	}
 
 	channel <- data

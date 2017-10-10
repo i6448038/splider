@@ -6,18 +6,10 @@ import (
 	"strconv"
 	"regexp"
 	"strings"
-	"fmt"
-	."splider/helper"
-	 "sync"
 	"time"
+	"fmt"
 )
 
-var m *sync.Mutex
-var ZhihuFlagCount = 0
-
-func init(){
-	m = new(sync.Mutex)
-}
 
 
 //过滤掉不符合要求的url
@@ -33,15 +25,13 @@ func FilterZhihuURLs(urls []string)[]string{
 
 
 //解析知乎最主要的问题页
-func PaserZhihuQuestion(url string)(*Crawler, error){
+func PaserZhihuQuestion(url string)*Crawler{
 	fmt.Println(url)
 	crawlerData := new(Crawler)
-	resp := Get(url)
-	defer resp.Body.Close()
-	body, err := goquery.NewDocumentFromResponse(resp)
+	body, err := goquery.NewDocument(url)
 
 	if err != nil{
-		return crawlerData, err
+		panic(err)
 	}
 
 	crawlerData.Url = url
@@ -54,7 +44,9 @@ func PaserZhihuQuestion(url string)(*Crawler, error){
 	Find(".NumberBoard.QuestionFollowStatus-counts .NumberBoard-value").First().
 		Text())
 	if err != nil{
-		return crawlerData, err
+		fmt.Println("让输入验证码，等待一分钟")
+		time.Sleep(time.Minute)
+		return PaserZhihuQuestion(url)
 	}
 
 	crawlerData.Title = headerMain.Find(".QuestionHeader-title").Text()
@@ -78,14 +70,14 @@ func PaserZhihuQuestion(url string)(*Crawler, error){
 			"个回答"))
 	crawlerData.Pv, err = strconv.Atoi(headerSide.Find(".NumberBoard.QuestionFollowStatus-counts .NumberBoard-value").Last().Text())
 	if err != nil{
-		return crawlerData, err
+		return crawlerData
 	}
 	var imgs = []string{}
 
 	imgMess, isExist := body.Find("#data").Attr("data-state")
 
 	if !isExist{
-		panic("解析有问题")
+		panic("不存在")
 	}
 
 	reg := regexp.MustCompile(`\"editableDetail\":[\s]?\"([<\\>\s\t\w\d-=\\\"://\.])*,`)
@@ -106,14 +98,5 @@ func PaserZhihuQuestion(url string)(*Crawler, error){
 	})
 
 	crawlerData.Img = imgs
-
-	m.Lock()
-	ZhihuFlagCount++
-	if ZhihuFlagCount > 300{
-		time.Sleep(10 * time.Second)
-		ZhihuFlagCount = 0
-	}
-	m.Unlock()
-
-	return crawlerData, nil
+	return crawlerData
 }

@@ -35,7 +35,7 @@ func ZhiHuBianJi(channel chan <- []*Crawler){
 
 	var data []*Crawler
 
-	for i := 1; len(urlList) < 60; i++{
+	for i := 1; len(urlList) < 100; i++{
 		offset := ""
 		if(i >= 4){
 			offset = strconv.Itoa(i * 20 - 1)
@@ -53,9 +53,8 @@ func ZhiHuBianJi(channel chan <- []*Crawler){
 
 
 	for _, url := range urlList{
-		crawlerData, err := PaserZhihuQuestion(url)
 		if err == nil{
-			data = append(data, crawlerData)
+			data = append(data, PaserZhihuQuestion(url))
 		}
 	}
 
