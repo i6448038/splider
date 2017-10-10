@@ -7,9 +7,20 @@ import (
 	"strings"
 	"splider/helper"
 	"fmt"
+	"sync"
+	"time"
 )
 
+var wukongMu *sync.Mutex
+var wukongFlagCount = 0
+
+func init(){
+	wukongMu = new(sync.Mutex)
+}
+
+
 func PaserWukongQuestion(url string)(*Crawler, error){
+	fmt.Println(url)
 	crawlerData := new(Crawler)
 	body, err := goquery.NewDocument(url)
 
@@ -42,17 +53,24 @@ func PaserWukongQuestion(url string)(*Crawler, error){
 
 	crawlerData.Img = imgList
 	crawlerData.Desc = questionMain.Find(".question-text").Text()
-	crawlerData.AttentionCount, err = strconv.Atoi(questionMain.Find("[data-node='followquestion'] .count").Text())
+	crawlerData.AttentionCount, err = strconv.Atoi(questionMain.Find(".question-bottom [data-node='followquestion'] .count").Text())
 	if err != nil{
-		panic(err)
+		time.Sleep(10 * time.Second)
+		return PaserWukongQuestion(url)
 	}
 
 	crawlerData.AnswerCount, err = strconv.Atoi(strings.TrimSuffix(questionMain.Find(".answer-count-h span").Text(), "个回答"))
 	if err != nil{
-		panic(err)
+		time.Sleep(10 * time.Second)
+		return PaserWukongQuestion(url)
 	}
-
-	fmt.Println(url)
+	wukongMu.Lock()
+	wukongFlagCount++
+	if wukongFlagCount > 300{
+		time.Sleep(10 * time.Second)
+		wukongFlagCount = 0
+	}
+	wukongMu.Unlock()
 
 	return crawlerData, nil
 }

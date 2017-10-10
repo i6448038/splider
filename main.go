@@ -15,20 +15,17 @@ func main(){
 
 	channel := make(chan []*Crawler)
 
-	go ZhiHuBianJi(channel)
-	go ZhihuDayhot(channel)
-	go ZhihuMonthlyhot(channel)
-	go ZhihuTopic(channel)
-	go WukongList(channel)
+	go ZhiHuBianJi(channel)//1
+	go ZhihuDayhot(channel)//1
+	go ZhihuMonthlyhot(channel)//1
+	go ZhihuTopic(channel)//28
+	go WukongList(channel) //23
 
-	for i := 0; i < 1; i++{
-		msg := <-channel
-		for _, v := range msg{
-			_, err := Engine.Insert(v)
-			if err != nil{
-				fmt.Println("插入数据有误", ":", err.Error())
-				return
-			}
+	for i := 0; i < 54; i++{
+		_, err := Engine.Insert(<-channel)
+		if err != nil{
+			fmt.Println("插入数据有误", ":", err.Error())
+			return
 		}
 	}
 }
