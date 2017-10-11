@@ -1,21 +1,30 @@
-package spider_lib
+package zhihu
 
 import (
 	"github.com/PuerkitoBio/goquery"
 	."splider/models"
-	."splider/spider_lib/landing_page"
 	."splider/helper"
 	"strconv"
+	"fmt"
+	"net/http"
 )
 
 
 func ZhihuMonthlyhot(channel chan <- []*Crawler){
-	doc, err := goquery.NewDocument("https://www.zhihu.com/explore#monthly-hot")
+	client := &http.Client{}
+	resp, _ := client.Get("https://www.zhihu.com/explore#monthly-hot")
+	defer resp.Body.Close()
+	doc, err := goquery.NewDocumentFromResponse(resp)
+
+	if err != nil{
+		panic(err)
+	}
 
 	if err != nil{
 		panic(err.Error())
 	}
 
+	fmt.Println("开始抓每月热")
 	var urlList []string
 	doc.Find("[data-type='monthly'] .explore-feed.feed-item h2 a").Each(func(i int, selection *goquery.Selection) {
 		url, isExist := selection.Attr("href")
@@ -29,6 +38,7 @@ func ZhihuMonthlyhot(channel chan <- []*Crawler){
 	for i := 1; len(urlList) < 100; i++{
 		offset := strconv.Itoa(i*5)
 		urlList = RemoveDuplicates(append(urlList, FilterZhihuURLs(ChangeToAbspath(nextMonthPage(offset,urlList), "https://www.zhihu.com"))...))
+		fmt.Println("每月热list 长度", len(urlList))
 	}
 
 	var data []*Crawler

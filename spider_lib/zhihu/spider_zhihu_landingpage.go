@@ -1,4 +1,4 @@
-package landing_page
+package zhihu
 
 import (
 	."splider/models"
@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 	"fmt"
+	"net/http"
 )
 
 
@@ -26,9 +27,11 @@ func FilterZhihuURLs(urls []string)[]string{
 
 //解析知乎最主要的问题页
 func PaserZhihuQuestion(url string)*Crawler{
-	fmt.Println(url)
+	client := &http.Client{}
+	resp, _ := client.Get(url)
+	defer resp.Body.Close()
 	crawlerData := new(Crawler)
-	body, err := goquery.NewDocument(url)
+	body, err := goquery.NewDocumentFromResponse(resp)
 
 	if err != nil{
 		panic(err)
@@ -44,9 +47,12 @@ func PaserZhihuQuestion(url string)*Crawler{
 	Find(".NumberBoard.QuestionFollowStatus-counts .NumberBoard-value").First().
 		Text())
 	if err != nil{
-		fmt.Println("让输入验证码，等待一分钟")
-		time.Sleep(time.Minute)
-		return PaserZhihuQuestion(url)
+		if (strings.Contains(body.Text(), "验证")){
+			fmt.Println("要求输入验证码，等待一分钟")
+			time.Sleep(time.Minute)
+			return PaserZhihuQuestion(url)
+		}
+		panic(err.Error())
 	}
 
 	crawlerData.Title = headerMain.Find(".QuestionHeader-title").Text()
@@ -98,5 +104,6 @@ func PaserZhihuQuestion(url string)*Crawler{
 	})
 
 	crawlerData.Img = imgs
+	fmt.Println("成功抓取了", url)
 	return crawlerData
 }

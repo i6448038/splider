@@ -1,9 +1,8 @@
-package spider_lib
+package zhihu
 
 import (
 	"github.com/PuerkitoBio/goquery"
 	."splider/models"
-	."splider/spider_lib/landing_page"
 	."splider/helper"
 	"strconv"
 	"time"

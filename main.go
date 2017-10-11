@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	."splider/spider_lib"
+	."splider/spider_lib/wukong"
+	."splider/spider_lib/zhihu"
 	."splider/models"
 )
 
@@ -16,13 +17,13 @@ func main(){
 
 	channel := make(chan []*Crawler)
 
-	//go ZhiHuBianJi(channel)//1
+	go ZhiHuBianJi(channel)//1
 	go ZhihuDayhot(channel)//1
-	//go ZhihuMonthlyhot(channel)//1
-	//go ZhihuTopic(channel)//28
-	//go WukongList(channel) //24
+	go ZhihuMonthlyhot(channel)//1
+	go ZhihuTopic(channel)//28
+	go WukongList(channel) //24
 
-	for i := 0; i < 1; i++{
+	for i := 0; i < 55; i++{
 		datas := <-channel
 		for _, data := range datas{
 			crawler := new(Crawler)

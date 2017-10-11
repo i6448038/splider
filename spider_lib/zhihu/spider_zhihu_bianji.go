@@ -1,10 +1,9 @@
-package spider_lib
+package zhihu
 
 import (
 	"github.com/PuerkitoBio/goquery"
 	."splider/models"
 	."splider/helper"
-	."splider/spider_lib/landing_page"
 	"strings"
 	"net/http"
 	"net/url"
@@ -16,13 +15,16 @@ import (
 
 
 func ZhiHuBianJi(channel chan <- []*Crawler){
-
-	doc, err := goquery.NewDocument("https://www.zhihu.com/explore/recommendations")
+	client := &http.Client{}
+	resp, _ := client.Get("https://www.zhihu.com/explore/recommendations")
+	defer resp.Body.Close()
+	doc, err := goquery.NewDocumentFromResponse(resp)
 
 	if err != nil{
 		panic(err.Error())
 	}
 
+	fmt.Println("开始抓编辑")
 	var urlList []string
 	doc.Find("#zh-recommend-list-full .zh-general-list .zm-item h2 a").
 		Each(func(i int, selection *goquery.Selection) {
@@ -49,6 +51,7 @@ func ZhiHuBianJi(channel chan <- []*Crawler){
 			}
 		})
 		urlList = RemoveDuplicates(FilterZhihuURLs(ChangeToAbspath(urlList, "https://www.zhihu.com")))
+		fmt.Println("编辑list的长度现在为：", len(urlList))
 	}
 
 

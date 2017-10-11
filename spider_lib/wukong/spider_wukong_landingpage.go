@@ -1,4 +1,4 @@
-package landing_page
+package wukong
 
 import (
 	. "splider/models"
@@ -20,7 +20,6 @@ func init(){
 
 
 func PaserWukongQuestion(url string)(*Crawler, error){
-	fmt.Println(url)
 	crawlerData := new(Crawler)
 	body, err := goquery.NewDocument(url)
 
@@ -71,6 +70,8 @@ func PaserWukongQuestion(url string)(*Crawler, error){
 		wukongFlagCount = 0
 	}
 	wukongMu.Unlock()
+
+	fmt.Println("成功爬取了url", url)
 
 	return crawlerData, nil
 }
