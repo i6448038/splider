@@ -47,6 +47,7 @@ func nextDayhotPage(offset string, data []string)[]string{
 	doc, err := goquery.NewDocument(`https://www.zhihu.com/node/ExploreAnswerListV2?params={"offset":` + offset + `,"type":"day"}`)
 
 	if err != nil{
+		fmt.Println("访问", "https://www.zhihu.com/node/ExploreAnswerListV2", "get", "正在等待一分钟")
 		time.Sleep(time.Minute)
 		return nextDayhotPage(offset, data)
 	}

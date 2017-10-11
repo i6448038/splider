@@ -18,7 +18,7 @@ func init(){
 	wukongMu = new(sync.Mutex)
 }
 
-
+//解析悟空落地页
 func PaserWukongQuestion(url string)(*Crawler, error){
 	crawlerData := new(Crawler)
 	body, err := goquery.NewDocument(url)

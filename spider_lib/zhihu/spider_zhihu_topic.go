@@ -86,6 +86,7 @@ func parser(url string)[]string{
 
 
 	if error != nil{
+		fmt.Println("访问", url, "get", "正在等待一分钟")
 		time.Sleep(time.Minute)
 		return parser(url)
 	}
@@ -95,6 +96,7 @@ func parser(url string)[]string{
 	body, err := goquery.NewDocumentFromResponse(resp)
 
 	if err != nil{
+		fmt.Println("访问", url, "get", "正在等待一分钟")
 		time.Sleep(time.Minute)
 		return parser(url)
 	}
@@ -105,6 +107,7 @@ func parser(url string)[]string{
 	itmes := feedItems.Find("h2 a")
 
 	if len(itmes.Nodes) == 0 {
+		fmt.Println("访问", url, "get", "正在等待一分钟")
 		time.Sleep(time.Minute)
 		return parser(url)
 	}
@@ -153,6 +156,7 @@ func next6Page(url string, document *goquery.Selection)*goquery.Selection{
 	ht := &http.Client{}
 	resp, err := ht.Post(url, "application/x-www-form-urlencoded", strings.NewReader(Values{"start":{"0"}, "offset":{offset}}.Encode()))
 	if err != nil {
+		fmt.Println("访问", url, "post", "正在等待")
 		time.Sleep(time.Minute)
 		return next6Page(url, document)
 	}

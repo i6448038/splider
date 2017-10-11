@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"strconv"
 	"math/rand"
-	"fmt"
 	"net/http"
 )
 
@@ -107,7 +106,6 @@ func WukongList(channel chan <- []*Crawler){
 
 	for i:=0; i <= len(domains); i++{
 		urlList := <-wukongChannel
-		fmt.Println("主线程接受到urls的长度为", len(urlList))
 		for _, url := range ChangeToAbspath(urlList, "https://www.wukong.com"){
 			crawlerData, err := PaserWukongQuestion(url)
 			if err == nil{
@@ -201,9 +199,7 @@ func crawleWukongNormalTopic(domain,url string, urls chan <-[]string){
 			strconv.FormatInt(time.Now().UnixNano()/1e6, 10) + "&max_behot_time=" + strconv.FormatInt(time.Now().Add(time.Duration(rand.Int63n(120))  * time.Minute).Unix(), 10)
 
 		domainUrlList = RemoveDuplicates(append(domainUrlList, getWukongLandingPageUrls(url, false)...))
-		fmt.Println("目前的专栏的数据urls长度为", len(domainUrlList))
 	}
-	fmt.Println("发送长度为：", len(domainUrlList), "的urls到接收线程")
 	urls <- domainUrlList
 }
 
