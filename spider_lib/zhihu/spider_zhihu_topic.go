@@ -10,6 +10,8 @@ import (
 	"fmt"
 	"strconv"
 	"time"
+	"net/http"
+	."net/url"
 )
 
 var topicMap = map[string]string{
@@ -73,14 +75,28 @@ func ZhihuTopic(channel chan <- []*Crawler){
 }
 
 func parser(url string)[]string{
-	fmt.Println(url)
-	resp := Get(url)
+	fmt.Println("正在解析专栏url", url)
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		panic(err)
+	}
+
+	resp, error := client.Do(req)
+
+
+	if error != nil{
+		time.Sleep(time.Minute)
+		return parser(url)
+	}
+
 	defer resp.Body.Close()
 
 	body, err := goquery.NewDocumentFromResponse(resp)
 
 	if err != nil{
-		panic(err)
+		time.Sleep(time.Minute)
+		return parser(url)
 	}
 
 	var urlList []string
@@ -134,7 +150,12 @@ func next6Page(url string, document *goquery.Selection)*goquery.Selection{
 		panic("获取下一页出问题")
 	}
 
-	resp := Post(url, offset)
+	ht := &http.Client{}
+	resp, err := ht.Post(url, "application/x-www-form-urlencoded", strings.NewReader(Values{"start":{"0"}, "offset":{offset}}.Encode()))
+	if err != nil {
+		time.Sleep(time.Minute)
+		return next6Page(url, document)
+	}
 
 	defer resp.Body.Close()
 
@@ -177,7 +198,19 @@ func next6Page(url string, document *goquery.Selection)*goquery.Selection{
 }
 
 func nextSpecial19Page(page, url string) *goquery.Selection{
-	resp := Get(url + "?page="+page)
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", url + "?page="+page, nil)
+	if err != nil {
+		panic(err)
+	}
+
+	resp, error := client.Do(req)
+
+
+	if error != nil{
+		panic(error)
+	}
+
 	defer resp.Body.Close()
 	body, err := goquery.NewDocumentFromResponse(resp)
 

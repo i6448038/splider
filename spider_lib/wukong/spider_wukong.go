@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"math/rand"
 	"fmt"
+	"net/http"
 )
 
 type wukongResp struct {
@@ -121,13 +122,27 @@ func WukongList(channel chan <- []*Crawler){
 
 //获取落地页地址
 func getWukongLandingPageUrls(url string, rank bool)[]string{
-	resp := Get(url)
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		panic(err)
+	}
+
+	resp, error := client.Do(req)
 	defer resp.Body.Close()
+
+
+	if error != nil{
+		time.Sleep(time.Minute)
+		return getWukongLandingPageUrls(url, rank)
+	}
+
 
 	respJson, err:= ioutil.ReadAll(resp.Body)
 
 	if err != nil{
-		panic(err)
+		time.Sleep(time.Minute)
+		return getWukongLandingPageUrls(url, rank)
 	}
 
 
