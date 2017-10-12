@@ -78,15 +78,21 @@ func parser(url string)[]string{
 
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
+	req.Close = true
 	if err != nil {
 		panic(err)
 	}
 
-	resp, error := client.Do(req)
+	resp, err := client.Do(req)
+	if err != nil{
+		config.Loggers["zhihu_error"].Println("解析知乎垂直专栏", url, "出现错误", err.Error(), "等待半分钟，重试！")
+		time.Sleep(20 * time.Second)
+		return parser(url)
+	}
 
 	defer resp.Body.Close()
 
-	if error != nil{
+	if err != nil{
 		config.Loggers["zhihu_error"].Println("解析知乎垂直专栏", url, "出现错误", err.Error(), "等待半分钟，重试！")
 		time.Sleep(20 * time.Second)
 		return parser(url)
@@ -155,21 +161,21 @@ func next6Page(url string, document *goquery.Selection)*goquery.Selection{
 	}
 
 	ht := &http.Client{}
-	resp, error := ht.Post(url, "application/x-www-form-urlencoded", strings.NewReader(Values{"start":{"0"}, "offset":{offset}}.Encode()))
-	if error != nil {
-		config.Loggers["zhihu_error"].Println("解析知乎垂直专栏", url, "出现错误", error.Error(), "等待半分钟，重试！")
+	resp, err := ht.Post(url, "application/x-www-form-urlencoded", strings.NewReader(Values{"start":{"0"}, "offset":{offset}}.Encode()))
+	if err != nil {
+		config.Loggers["zhihu_error"].Println("解析知乎垂直专栏", url, "出现错误", err.Error(), "等待半分钟，重试！")
 		time.Sleep(20 * time.Second)
 		return next6Page(url, document)
 	}
 
 	defer resp.Body.Close()
 
-	content, error := ioutil.ReadAll(resp.Body)
+	content, err := ioutil.ReadAll(resp.Body)
 
 	defer resp.Body.Close()
 
-	if error != nil {
-		config.Loggers["zhihu_error"].Println("解析知乎垂直专栏", url, "出现错误", error.Error(), "等待半分钟，重试！")
+	if err != nil {
+		config.Loggers["zhihu_error"].Println("解析知乎垂直专栏", url, "出现错误", err.Error(), "等待半分钟，重试！")
 		time.Sleep(20 * time.Second)
 		return next6Page(url, document)
 	}
@@ -182,10 +188,10 @@ func next6Page(url string, document *goquery.Selection)*goquery.Selection{
 
 	e := new(Items)
 
-	error = json.Unmarshal(content, e)
+	err = json.Unmarshal(content, e)
 
-	if error != nil{
-		config.Loggers["zhihu_error"].Println("解析知乎垂直专栏", url, "出现错误", error.Error(), "等待半分钟，重试！")
+	if err != nil{
+		config.Loggers["zhihu_error"].Println("解析知乎垂直专栏", url, "出现错误", err.Error(), "等待半分钟，重试！")
 		time.Sleep(20 * time.Second)
 		return next6Page(url, document)
 	}
@@ -198,10 +204,10 @@ func next6Page(url string, document *goquery.Selection)*goquery.Selection{
 		return next6Page(url, document)
 	}
 
-	respBody, error := goquery.NewDocumentFromReader(strings.NewReader(html))
+	respBody, err := goquery.NewDocumentFromReader(strings.NewReader(html))
 
-	if error != nil{
-		config.Loggers["zhihu_error"].Println("解析知乎垂直专栏", url, "出现错误", error.Error(), "等待半分钟，重试！")
+	if err != nil{
+		config.Loggers["zhihu_error"].Println("解析知乎垂直专栏", url, "出现错误", err.Error(), "等待半分钟，重试！")
 		time.Sleep(20 * time.Second)
 		return next6Page(url, document)
 	}
@@ -219,6 +225,13 @@ func nextSpecial19Page(page, url string) *goquery.Selection{
 	}
 
 	resp, err := client.Do(req)
+
+	if err != nil {
+		config.Loggers["zhihu_error"].Println("解析知乎垂直专栏", url, "出现错误", err.Error(), "等待半分钟，重试！")
+		time.Sleep(20 * time.Second)
+		return nextSpecial19Page(page, url)
+	}
+
 	defer resp.Body.Close()
 
 	if err != nil{

@@ -17,7 +17,13 @@ import (
 
 func ZhiHuBianJi(channel chan <- []*Crawler){
 	client := &http.Client{}
-	resp, _ := client.Get("https://www.zhihu.com/explore/recommendations")
+	resp, err := client.Get("https://www.zhihu.com/explore/recommendations")
+
+	if err != nil{
+		config.Loggers["zhihu_error"].Println("知乎编辑推荐 刚启动协程就出现错误，协程关闭: ", err.Error())
+		return
+	}
+
 	defer resp.Body.Close()
 	doc, err := goquery.NewDocumentFromResponse(resp)
 
@@ -69,16 +75,17 @@ func nextBianjiPage(offset string, limit string)*goquery.Selection{
 	ht := &http.Client{}
 	resp, err := ht.Post("https://www.zhihu.com/node/ExploreRecommendListV2", "application/x-www-form-urlencoded",
 		strings.NewReader(url.Values{"method":{"next"}, "params":{`{"limit":`+limit + `,"offset":` + offset + `}`}}.Encode()))
-	defer resp.Body.Close()
+
 	if err != nil {
 		config.Loggers["zhihu_error"].Println("知乎编辑推荐 出现错误", err.Error(), "等待半分钟，重试！")
 		time.Sleep(20 * time.Second)
 		return nextBianjiPage(offset, limit)
 	}
+	defer resp.Body.Close()
 
-	content, error := ioutil.ReadAll(resp.Body)
+	content, err := ioutil.ReadAll(resp.Body)
 
-	if error != nil {
+	if err != nil {
 		config.Loggers["zhihu_error"].Println("知乎编辑推荐 出现错误", err.Error(), "等待半分钟，重试！")
 		time.Sleep(20 * time.Second)
 		return nextBianjiPage(offset, limit)
@@ -92,9 +99,9 @@ func nextBianjiPage(offset string, limit string)*goquery.Selection{
 
 	e := new(Items)
 
-	error = json.Unmarshal(content, e)
+	err = json.Unmarshal(content, e)
 
-	if error != nil{
+	if err != nil{
 		config.Loggers["zhihu_error"].Println("知乎编辑推荐 出现错误", err.Error(), "等待半分钟，重试！")
 		time.Sleep(20 * time.Second)
 		return nextBianjiPage(offset, limit)
@@ -113,9 +120,9 @@ func nextBianjiPage(offset string, limit string)*goquery.Selection{
 		}
 	}
 
-	respBody, error := goquery.NewDocumentFromReader(strings.NewReader(html))
+	respBody, err := goquery.NewDocumentFromReader(strings.NewReader(html))
 
-	if error != nil{
+	if err != nil{
 		config.Loggers["zhihu_error"].Println("知乎编辑推荐 出现错误", err.Error(), "等待半分钟，重试！")
 		time.Sleep(20 * time.Second)
 		return nextBianjiPage(offset, limit)

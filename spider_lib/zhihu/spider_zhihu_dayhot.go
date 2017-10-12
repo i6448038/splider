@@ -6,7 +6,6 @@ import (
 	."splider/helper"
 	"strconv"
 	"time"
-	"fmt"
 	"splider/config"
 )
 func ZhihuDayhot(channel chan <- []*Crawler){
@@ -20,7 +19,6 @@ func ZhihuDayhot(channel chan <- []*Crawler){
 	var urlList []string
 	doc.Find("[data-type='daily'] .explore-feed.feed-item h2 a").Each(func(i int, selection *goquery.Selection) {
 		url, isExist := selection.Attr("href")
-		fmt.Println(url)
 		if isExist{
 			urlList = append(urlList, url)
 		}

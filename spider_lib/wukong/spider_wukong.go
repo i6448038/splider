@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"math/rand"
 	"net/http"
+	"splider/config"
 )
 
 type wukongResp struct {
@@ -125,21 +126,23 @@ func getWukongLandingPageUrls(url string, rank bool)[]string{
 	if err != nil {
 		panic(err)
 	}
+	req.Close = true
 
 	resp, error := client.Do(req)
+
+	if error != nil{
+		config.Loggers["wukong_error"].Println("访问", url, "出现问题," , error.Error(), "等待半分钟后重试!")
+		time.Sleep(30 * time.Second)
+		return getWukongLandingPageUrls(url, rank)
+	}
 	defer resp.Body.Close()
 
 
+	respJson, error := ioutil.ReadAll(resp.Body)
+
 	if error != nil{
-		time.Sleep(time.Minute)
-		return getWukongLandingPageUrls(url, rank)
-	}
-
-
-	respJson, err:= ioutil.ReadAll(resp.Body)
-
-	if err != nil{
-		time.Sleep(time.Minute)
+		config.Loggers["wukong_error"].Println("访问", url, "出现问题," , error.Error(), "等待半分钟后重试!")
+		time.Sleep(30 * time.Second)
 		return getWukongLandingPageUrls(url, rank)
 	}
 

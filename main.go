@@ -5,6 +5,7 @@ import (
 	."splider/spider_lib/wukong"
 	."splider/spider_lib/zhihu"
 	."splider/models"
+	"splider/config"
 )
 
 func main(){
@@ -31,7 +32,8 @@ func main(){
 			if crawler.Url == ""{
 				_, err := Engine.InsertOne(data)
 				if err != nil{
-					fmt.Println("插入数据有误", ":", err.Error())
+					config.Loggers["zhihu_error"].Println("插入数据有误", ":", err.Error())
+					config.Loggers["wukong_error"].Println("插入数据有误", ":", err.Error())
 					return
 				}
 			}

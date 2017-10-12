@@ -6,9 +6,9 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"strings"
 	"splider/helper"
-	"fmt"
 	"sync"
 	"time"
+	"splider/config"
 )
 
 var wukongMu *sync.Mutex
@@ -24,7 +24,9 @@ func PaserWukongQuestion(url string)(*Crawler, error){
 	body, err := goquery.NewDocument(url)
 
 	if err != nil{
-		return crawlerData, err
+		config.Loggers["wukong_error"].Println("访问", url, "出现问题，等待半分钟后重试!")
+		time.Sleep(30 * time.Second)
+		return PaserWukongQuestion(url)
 	}
 
 	crawlerData.Url = strings.TrimSpace(url)
@@ -54,13 +56,15 @@ func PaserWukongQuestion(url string)(*Crawler, error){
 	crawlerData.Desc = strings.TrimSpace(questionMain.Find(".question-text").Text())
 	crawlerData.AttentionCount, err = strconv.Atoi(questionMain.Find(".question-bottom [data-node='followquestion'] .count").Text())
 	if err != nil{
-		time.Sleep(10 * time.Second)
+		config.Loggers["wukong_error"].Println("访问", url, "出现问题," , err.Error(), "等待半分钟后重试!")
+		time.Sleep(30 * time.Second)
 		return PaserWukongQuestion(url)
 	}
 
 	crawlerData.AnswerCount, err = strconv.Atoi(strings.TrimSuffix(questionMain.Find(".answer-count-h span").Text(), "个回答"))
 	if err != nil{
-		time.Sleep(10 * time.Second)
+		config.Loggers["wukong_error"].Println("访问", url, "出现问题," , err.Error(), "等待半分钟后重试!")
+		time.Sleep(30 * time.Second)
 		return PaserWukongQuestion(url)
 	}
 	wukongMu.Lock()
@@ -71,7 +75,7 @@ func PaserWukongQuestion(url string)(*Crawler, error){
 	}
 	wukongMu.Unlock()
 
-	fmt.Println("成功爬取了url", url)
+	config.Loggers["wukong_access"].Println("成功爬取了url", url)
 
 	return crawlerData, nil
 }

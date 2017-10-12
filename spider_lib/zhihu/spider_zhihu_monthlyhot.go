@@ -13,8 +13,14 @@ import (
 
 func ZhihuMonthlyhot(channel chan <- []*Crawler){
 	client := &http.Client{}
-	resp, _ := client.Get("https://www.zhihu.com/explore#monthly-hot")
+	resp, err := client.Get("https://www.zhihu.com/explore#monthly-hot")
+
+	if err != nil{
+		config.Loggers["zhihu_error"].Println("本月最热 刚启动协程就出现错误，协程关闭: ", err.Error())
+		return
+	}
 	defer resp.Body.Close()
+
 	doc, err := goquery.NewDocumentFromResponse(resp)
 
 	if err != nil{
