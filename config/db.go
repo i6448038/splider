@@ -1,26 +1,20 @@
 package config
 
-import (
-	"github.com/Unknwon/goconfig"
-	"path/filepath"
-)
 
 var DBconfig map[string]string
 
 func init(){
-	DBconfig = loadFile()
+	DBconfig = loadDBFile()
 }
 
 
 //加载配置文件的信息
-func loadFile()map[string]string{
+func loadDBFile()map[string]string{
 
+	config := loadConfigFile()
 	ret := make(map[string]string)
-	dirPath, _ := filepath.Abs("./")
-	config , err := goconfig.LoadConfigFile(dirPath + "/config/config.ini")
-	if err != nil{
-		panic(err)
-	}
+
+
 
 	user, err := config.GetValue("mysql", "user")
 	if err != nil{
