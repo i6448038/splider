@@ -6,17 +6,9 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"strings"
 	"splider/helper"
-	"sync"
 	"time"
 	"splider/config"
 )
-
-var wukongMu *sync.Mutex
-var wukongFlagCount = 0
-
-func init(){
-	wukongMu = new(sync.Mutex)
-}
 
 //解析悟空落地页
 func PaserWukongQuestion(url string)(*Crawler, error){
@@ -67,13 +59,6 @@ func PaserWukongQuestion(url string)(*Crawler, error){
 		time.Sleep(30 * time.Second)
 		return PaserWukongQuestion(url)
 	}
-	wukongMu.Lock()
-	wukongFlagCount++
-	if wukongFlagCount > 300{
-		time.Sleep(10 * time.Second)
-		wukongFlagCount = 0
-	}
-	wukongMu.Unlock()
 
 	config.Loggers["wukong_access"].Println("成功爬取了url", url)
 
