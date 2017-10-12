@@ -4,10 +4,10 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	."splider/models"
 	."splider/helper"
+	"splider/config"
 	"io/ioutil"
 	"encoding/json"
 	"strings"
-	"fmt"
 	"strconv"
 	"time"
 	"net/http"
@@ -75,7 +75,7 @@ func ZhihuTopic(channel chan <- []*Crawler){
 }
 
 func parser(url string)[]string{
-	fmt.Println("正在解析专栏url", url)
+
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -84,20 +84,19 @@ func parser(url string)[]string{
 
 	resp, error := client.Do(req)
 
+	defer resp.Body.Close()
 
 	if error != nil{
-		fmt.Println("访问", url, "get", "正在等待一分钟")
-		time.Sleep(time.Minute)
+		config.Loggers["zhihu_error"].Println("解析知乎垂直专栏", url, "出现错误", err.Error(), "等待半分钟，重试！")
+		time.Sleep(20 * time.Second)
 		return parser(url)
 	}
-
-	defer resp.Body.Close()
 
 	body, err := goquery.NewDocumentFromResponse(resp)
 
 	if err != nil{
-		fmt.Println("访问", url, "get", "正在等待一分钟")
-		time.Sleep(time.Minute)
+		config.Loggers["zhihu_error"].Println("解析知乎垂直专栏", url, "出现错误", err.Error(), "等待半分钟，重试！")
+		time.Sleep(20 * time.Second)
 		return parser(url)
 	}
 
@@ -107,8 +106,8 @@ func parser(url string)[]string{
 	itmes := feedItems.Find("h2 a")
 
 	if len(itmes.Nodes) == 0 {
-		fmt.Println("访问", url, "get", "正在等待一分钟")
-		time.Sleep(time.Minute)
+		config.Loggers["zhihu_error"].Println("解析知乎垂直专栏", url, "出现错误, 可能让输入验证码", "等待半分钟，重试！")
+		time.Sleep(20 * time.Second)
 		return parser(url)
 	}
 
@@ -150,14 +149,16 @@ func next6Page(url string, document *goquery.Selection)*goquery.Selection{
 	offset, isExist := document.Last().Attr("data-score")
 
 	if !isExist{
-		panic("获取下一页出问题")
+		config.Loggers["zhihu_error"].Println("解析知乎垂直专栏", url, "出现错误, 可能让输入验证码", "等待半分钟，重试！")
+		time.Sleep(20 * time.Second)
+		return next6Page(url, document)
 	}
 
 	ht := &http.Client{}
-	resp, err := ht.Post(url, "application/x-www-form-urlencoded", strings.NewReader(Values{"start":{"0"}, "offset":{offset}}.Encode()))
-	if err != nil {
-		fmt.Println("访问", url, "post", "正在等待")
-		time.Sleep(time.Minute)
+	resp, error := ht.Post(url, "application/x-www-form-urlencoded", strings.NewReader(Values{"start":{"0"}, "offset":{offset}}.Encode()))
+	if error != nil {
+		config.Loggers["zhihu_error"].Println("解析知乎垂直专栏", url, "出现错误", error.Error(), "等待半分钟，重试！")
+		time.Sleep(20 * time.Second)
 		return next6Page(url, document)
 	}
 
@@ -168,7 +169,9 @@ func next6Page(url string, document *goquery.Selection)*goquery.Selection{
 	defer resp.Body.Close()
 
 	if error != nil {
-		panic(error)
+		config.Loggers["zhihu_error"].Println("解析知乎垂直专栏", url, "出现错误", error.Error(), "等待半分钟，重试！")
+		time.Sleep(20 * time.Second)
+		return next6Page(url, document)
 	}
 
 
@@ -182,20 +185,25 @@ func next6Page(url string, document *goquery.Selection)*goquery.Selection{
 	error = json.Unmarshal(content, e)
 
 	if error != nil{
-		time.Sleep(time.Minute)
+		config.Loggers["zhihu_error"].Println("解析知乎垂直专栏", url, "出现错误", error.Error(), "等待半分钟，重试！")
+		time.Sleep(20 * time.Second)
 		return next6Page(url, document)
 	}
 
 	html, ok := e.Msg[1].(string)
 
 	if !ok {
-		panic("强制类型转换失败")
+		config.Loggers["zhihu_error"].Println("解析知乎垂直专栏", url, "出现问题，可能是验证码，等待半分钟后重试！")
+		time.Sleep(20 * time.Second)
+		return next6Page(url, document)
 	}
 
 	respBody, error := goquery.NewDocumentFromReader(strings.NewReader(html))
 
 	if error != nil{
-		panic(error)
+		config.Loggers["zhihu_error"].Println("解析知乎垂直专栏", url, "出现错误", error.Error(), "等待半分钟，重试！")
+		time.Sleep(20 * time.Second)
+		return next6Page(url, document)
 	}
 
 	return respBody.Find(".feed-item.feed-item-hook")
@@ -205,21 +213,27 @@ func nextSpecial19Page(page, url string) *goquery.Selection{
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url + "?page="+page, nil)
 	if err != nil {
-		panic(err)
+		config.Loggers["zhihu_error"].Println("解析知乎垂直专栏", url, "出现错误", err.Error(), "等待半分钟，重试！")
+		time.Sleep(20 * time.Second)
+		return nextSpecial19Page(page, url)
 	}
 
-	resp, error := client.Do(req)
-
-
-	if error != nil{
-		panic(error)
-	}
-
+	resp, err := client.Do(req)
 	defer resp.Body.Close()
+
+	if err != nil{
+		config.Loggers["zhihu_error"].Println("解析知乎垂直专栏", url, "出现错误", err.Error(), "等待半分钟，重试！")
+		time.Sleep(20 * time.Second)
+		return nextSpecial19Page(page, url)
+	}
+
+
 	body, err := goquery.NewDocumentFromResponse(resp)
 
 	if err != nil{
-		panic(err)
+		config.Loggers["zhihu_error"].Println("解析知乎垂直专栏", url, "出现错误", err.Error(), "等待半分钟，重试！")
+		time.Sleep(20 * time.Second)
+		return nextSpecial19Page(page, url)
 	}
 	return body.Find("#zh-topic-top-page-list")
 }

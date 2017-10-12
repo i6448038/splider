@@ -7,15 +7,16 @@ import (
 	"strconv"
 	"time"
 	"fmt"
+	"splider/config"
 )
 func ZhihuDayhot(channel chan <- []*Crawler){
 	doc, err := goquery.NewDocument("https://www.zhihu.com/explore#daily-hot")
 
 	if err != nil{
-		panic(err.Error())
+		config.Loggers["zhihu_error"].Println("今日最热 刚启动协程就出现错误，协程关闭: ", err.Error())
+		return
 	}
 
-	fmt.Println("开始抓每日热")
 	var urlList []string
 	doc.Find("[data-type='daily'] .explore-feed.feed-item h2 a").Each(func(i int, selection *goquery.Selection) {
 		url, isExist := selection.Attr("href")
@@ -29,7 +30,6 @@ func ZhihuDayhot(channel chan <- []*Crawler){
 	for i:=1; len(urlList) < 100; i++{
 		offset := strconv.Itoa(i*5)
 		urlList = RemoveDuplicates(append(urlList, FilterZhihuURLs(ChangeToAbspath(nextDayhotPage(offset,urlList), "https://www.zhihu.com"))...))
-		fmt.Println("每日热list 长度", len(urlList))
 	}
 
 
@@ -47,8 +47,8 @@ func nextDayhotPage(offset string, data []string)[]string{
 	doc, err := goquery.NewDocument(`https://www.zhihu.com/node/ExploreAnswerListV2?params={"offset":` + offset + `,"type":"day"}`)
 
 	if err != nil{
-		fmt.Println("访问", "https://www.zhihu.com/node/ExploreAnswerListV2", "get", "正在等待一分钟")
-		time.Sleep(time.Minute)
+		config.Loggers["zhihu_error"].Println("解析知乎今日最热出现错误", err.Error(), "等待半分钟，重试！")
+		time.Sleep(20 * time.Second)
 		return nextDayhotPage(offset, data)
 	}
 

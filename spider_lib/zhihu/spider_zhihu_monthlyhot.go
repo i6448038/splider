@@ -5,8 +5,9 @@ import (
 	."splider/models"
 	."splider/helper"
 	"strconv"
-	"fmt"
 	"net/http"
+	"splider/config"
+	"time"
 )
 
 
@@ -17,14 +18,10 @@ func ZhihuMonthlyhot(channel chan <- []*Crawler){
 	doc, err := goquery.NewDocumentFromResponse(resp)
 
 	if err != nil{
-		panic(err)
+		config.Loggers["zhihu_error"].Println("本月最热 刚启动协程就出现错误，协程关闭: ", err.Error())
+		return
 	}
 
-	if err != nil{
-		panic(err.Error())
-	}
-
-	fmt.Println("开始抓每月热")
 	var urlList []string
 	doc.Find("[data-type='monthly'] .explore-feed.feed-item h2 a").Each(func(i int, selection *goquery.Selection) {
 		url, isExist := selection.Attr("href")
@@ -38,7 +35,6 @@ func ZhihuMonthlyhot(channel chan <- []*Crawler){
 	for i := 1; len(urlList) < 100; i++{
 		offset := strconv.Itoa(i*5)
 		urlList = RemoveDuplicates(append(urlList, FilterZhihuURLs(ChangeToAbspath(nextMonthPage(offset,urlList), "https://www.zhihu.com"))...))
-		fmt.Println("每月热list 长度", len(urlList))
 	}
 
 	var data []*Crawler
@@ -54,8 +50,9 @@ func nextMonthPage(offset string, data []string)[]string{
 	doc, err := goquery.NewDocument(`https://www.zhihu.com/node/ExploreAnswerListV2?params={"offset":` + offset + `,"type":"month"}`)
 
 	if err != nil{
-		panic(err.Error())
-		return []string{}
+		config.Loggers["zhihu_error"].Println("解析知乎本月最热出现错误", err.Error(), "等待半分钟，重试！")
+		time.Sleep(20 * time.Second)
+		return nextMonthPage(offset, data)
 	}
 
 	doc.Find(".explore-feed.feed-item h2 a").Each(func(i int, selection *goquery.Selection) {

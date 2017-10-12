@@ -7,10 +7,11 @@ import (
 	"strings"
 	"net/http"
 	"net/url"
-	"fmt"
 	"io/ioutil"
 	"encoding/json"
 	"strconv"
+	"splider/config"
+	"time"
 )
 
 
@@ -21,10 +22,10 @@ func ZhiHuBianJi(channel chan <- []*Crawler){
 	doc, err := goquery.NewDocumentFromResponse(resp)
 
 	if err != nil{
-		panic(err.Error())
+		config.Loggers["zhihu_error"].Println("编辑推荐 刚启动协程就出现错误，协程关闭: ", err.Error())
+		return
 	}
 
-	fmt.Println("开始抓编辑")
 	var urlList []string
 	doc.Find("#zh-recommend-list-full .zh-general-list .zm-item h2 a").
 		Each(func(i int, selection *goquery.Selection) {
@@ -51,7 +52,6 @@ func ZhiHuBianJi(channel chan <- []*Crawler){
 			}
 		})
 		urlList = RemoveDuplicates(FilterZhihuURLs(ChangeToAbspath(urlList, "https://www.zhihu.com")))
-		fmt.Println("编辑list的长度现在为：", len(urlList))
 	}
 
 
@@ -69,16 +69,19 @@ func nextBianjiPage(offset string, limit string)*goquery.Selection{
 	ht := &http.Client{}
 	resp, err := ht.Post("https://www.zhihu.com/node/ExploreRecommendListV2", "application/x-www-form-urlencoded",
 		strings.NewReader(url.Values{"method":{"next"}, "params":{`{"limit":`+limit + `,"offset":` + offset + `}`}}.Encode()))
+	defer resp.Body.Close()
 	if err != nil {
-		panic(err)
+		config.Loggers["zhihu_error"].Println("知乎编辑推荐 出现错误", err.Error(), "等待半分钟，重试！")
+		time.Sleep(20 * time.Second)
+		return nextBianjiPage(offset, limit)
 	}
 
 	content, error := ioutil.ReadAll(resp.Body)
 
-	defer resp.Body.Close()
-
 	if error != nil {
-		panic(error)
+		config.Loggers["zhihu_error"].Println("知乎编辑推荐 出现错误", err.Error(), "等待半分钟，重试！")
+		time.Sleep(20 * time.Second)
+		return nextBianjiPage(offset, limit)
 	}
 
 
@@ -92,8 +95,9 @@ func nextBianjiPage(offset string, limit string)*goquery.Selection{
 	error = json.Unmarshal(content, e)
 
 	if error != nil{
-		fmt.Println(string(content))
-		panic(error)
+		config.Loggers["zhihu_error"].Println("知乎编辑推荐 出现错误", err.Error(), "等待半分钟，重试！")
+		time.Sleep(20 * time.Second)
+		return nextBianjiPage(offset, limit)
 	}
 
 	html := ""
@@ -103,14 +107,18 @@ func nextBianjiPage(offset string, limit string)*goquery.Selection{
 		if ok{
 			html = html + "\n" + msg
 		}else{
-			panic("强制类型转换失败")
+			config.Loggers["zhihu_error"].Println("知乎编辑推荐 出现错误", err.Error(), "等待半分钟，重试！")
+			time.Sleep(20 * time.Second)
+			return nextBianjiPage(offset, limit)
 		}
 	}
 
 	respBody, error := goquery.NewDocumentFromReader(strings.NewReader(html))
 
 	if error != nil{
-		panic(error)
+		config.Loggers["zhihu_error"].Println("知乎编辑推荐 出现错误", err.Error(), "等待半分钟，重试！")
+		time.Sleep(20 * time.Second)
+		return nextBianjiPage(offset, limit)
 	}
 
 	return respBody.Find(".zm-item h2 a")

@@ -7,8 +7,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
-	"fmt"
 	"net/http"
+	"splider/config"
 )
 
 
@@ -34,15 +34,17 @@ func PaserZhihuQuestion(url string)*Crawler{
 	}()
 	defer resp.Body.Close()
 	if error != nil{
-		fmt.Println("Get方法访问", url, "出现问题", "休息一分钟后重试")
-		time.Sleep(time.Minute)
+		config.Loggers["zhihu_error"].Println("解析知乎落地页", url, "出现错误", error.Error(), "等待半分钟，重试！")
+		time.Sleep(20 * time.Second)
 		return PaserZhihuQuestion(url)
 	}
 	crawlerData := new(Crawler)
 	body, err := goquery.NewDocumentFromResponse(resp)
 
 	if err != nil{
-		panic(err)
+		config.Loggers["zhihu_error"].Println("解析知乎落地页", url, "出现错误", err.Error(), "等待半分钟，重试！")
+		time.Sleep(20 * time.Second)
+		return PaserZhihuQuestion(url)
 	}
 
 	crawlerData.Url = url
@@ -55,8 +57,8 @@ func PaserZhihuQuestion(url string)*Crawler{
 	Find(".NumberBoard.QuestionFollowStatus-counts .NumberBoard-value").First().
 		Text())
 	if err != nil{
-		fmt.Println("访问", url, "get", "正在等待一分钟")
-		time.Sleep(time.Minute)
+		config.Loggers["zhihu_error"].Println("解析知乎落地页", url, "出现错误", err.Error(), "等待半分钟，重试！")
+		time.Sleep(20 * time.Second)
 		return PaserZhihuQuestion(url)
 	}
 
@@ -88,7 +90,9 @@ func PaserZhihuQuestion(url string)*Crawler{
 	imgMess, isExist := body.Find("#data").Attr("data-state")
 
 	if !isExist{
-		panic("不存在")
+		config.Loggers["zhihu_error"].Println("解析知乎落地页出现错误, 选择器相关元素找不到，等待半分钟，重试！")
+		time.Sleep(20 * time.Second)
+		return PaserZhihuQuestion(url)
 	}
 
 	reg := regexp.MustCompile(`\"editableDetail\":[\s]?\"([<\\>\s\t\w\d-=\\\"://\.])*,`)
@@ -98,7 +102,9 @@ func PaserZhihuQuestion(url string)*Crawler{
 			strings.Replace(strings.TrimPrefix(strings.TrimSpace(reg.FindString(imgMess)), `"editableDetail":`), `\"`,`"`, -1)))
 
 	if err != nil{
-		panic(err)
+		config.Loggers["zhihu_error"].Println("解析知乎落地页", url, "出现错误", err.Error(), "等待半分钟，重试！")
+		time.Sleep(20 * time.Second)
+		return PaserZhihuQuestion(url)
 	}
 
 	imgList.Find("img").Each(func(i int, selection *goquery.Selection) {
@@ -109,6 +115,6 @@ func PaserZhihuQuestion(url string)*Crawler{
 	})
 
 	crawlerData.Img = imgs
-	fmt.Println("成功抓取了", url)
+	config.Loggers["zhihu_access"].Println("成功抓取了数据", url)
 	return crawlerData
 }
