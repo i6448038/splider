@@ -128,20 +128,20 @@ func getWukongLandingPageUrls(url string, rank bool)[]string{
 	}
 	req.Close = true
 
-	resp, error := client.Do(req)
+	resp, err := client.Do(req)
 
-	if error != nil{
-		config.Loggers["wukong_error"].Println("访问", url, "出现问题," , error.Error(), "等待半分钟后重试!")
+	if err != nil{
+		config.Loggers["wukong_error"].Println("访问", url, "出现问题," , err.Error(), "等待半分钟后重试!")
 		time.Sleep(30 * time.Second)
 		return getWukongLandingPageUrls(url, rank)
 	}
 	defer resp.Body.Close()
 
 
-	respJson, error := ioutil.ReadAll(resp.Body)
+	respJson, err := ioutil.ReadAll(resp.Body)
 
-	if error != nil{
-		config.Loggers["wukong_error"].Println("访问", url, "出现问题," , error.Error(), "等待半分钟后重试!")
+	if err != nil{
+		config.Loggers["wukong_error"].Println("访问", url, "出现问题," , err.Error(), "等待半分钟后重试!")
 		time.Sleep(30 * time.Second)
 		return getWukongLandingPageUrls(url, rank)
 	}
