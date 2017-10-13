@@ -5,7 +5,6 @@ import (
 	."splider/spider_lib/wukong"
 	."splider/spider_lib/zhihu"
 	."splider/models"
-	"splider/config"
 )
 
 func main(){
@@ -18,25 +17,12 @@ func main(){
 
 	channel := make(chan []*Crawler)
 
-	go ZhiHuBianJi(channel)//1
-	go ZhihuDayhot(channel)//1
-	go ZhihuMonthlyhot(channel)//1
-	go ZhihuTopic(channel)//28
+	go ParseZhihuTopic(channel)//5
+
 	go WukongList(channel) //24
 
 	for i := 0; i < 55; i++{
-		datas := <-channel
-		for _, data := range datas{
-			crawler := new(Crawler)
-			Engine.Where("url=?", data.Url).Get(crawler)
-			if crawler.Url == ""{
-				_, err := Engine.InsertOne(data)
-				if err != nil{
-					config.Loggers["zhihu_error"].Println("插入数据有误", ":", err.Error())
-					config.Loggers["wukong_error"].Println("插入数据有误", ":", err.Error())
-					return
-				}
-			}
-		}
+		SaveToMysql(<-channel)
 	}
+
 }

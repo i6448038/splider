@@ -8,12 +8,12 @@ import (
 	"time"
 	"splider/config"
 )
-func ZhihuDayhot(channel chan <- []*Crawler){
+func ZhihuDayhot()([]*Crawler, error){
 	doc, err := goquery.NewDocument("https://www.zhihu.com/explore#daily-hot")
 
 	if err != nil{
 		config.Loggers["zhihu_error"].Println("今日最热 刚启动协程就出现错误，协程关闭: ", err.Error())
-		return
+		return nil, err
 	}
 
 	var urlList []string
@@ -26,6 +26,7 @@ func ZhihuDayhot(channel chan <- []*Crawler){
 	})
 
 	for i:=1; len(urlList) < 100; i++{
+		time.Sleep(3 * time.Second)
 		offset := strconv.Itoa(i*5)
 		urlList = RemoveDuplicates(append(urlList, FilterZhihuURLs(ChangeToAbspath(nextDayhotPage(offset,urlList), "https://www.zhihu.com"))...))
 	}
@@ -37,8 +38,7 @@ func ZhihuDayhot(channel chan <- []*Crawler){
 		data = append(data, PaserZhihuQuestion(url))
 	}
 
-	channel <- data
-
+	return data, nil
 }
 
 func nextDayhotPage(offset string, data []string)[]string{
@@ -46,7 +46,7 @@ func nextDayhotPage(offset string, data []string)[]string{
 
 	if err != nil{
 		config.Loggers["zhihu_error"].Println("解析知乎今日最热出现错误", err.Error(), "等待半分钟，重试！")
-		time.Sleep(20 * time.Second)
+		time.Sleep(30 * time.Second)
 		return nextDayhotPage(offset, data)
 	}
 

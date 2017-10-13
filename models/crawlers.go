@@ -41,3 +41,18 @@ func init(){
 	}
 	Engine = engine
 }
+
+func SaveToMysql(datas []*Crawler){
+	for _, data := range datas{
+		crawler := new(Crawler)
+		Engine.Where("url=?", data.Url).Get(crawler)
+		if crawler.Url == ""{
+			_, err := Engine.InsertOne(data)
+			if err != nil{
+				config.Loggers["zhihu_error"].Println("插入数据有误", ":", err.Error())
+				config.Loggers["wukong_error"].Println("插入数据有误", ":", err.Error())
+
+			}
+		}
+	}
+}

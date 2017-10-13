@@ -15,13 +15,13 @@ import (
 )
 
 
-func ZhiHuBianJi(channel chan <- []*Crawler){
+func ZhiHuBianJi()([]*Crawler, error){
 	client := &http.Client{}
 	resp, err := client.Get("https://www.zhihu.com/explore/recommendations")
 
 	if err != nil{
 		config.Loggers["zhihu_error"].Println("知乎编辑推荐 刚启动协程就出现错误，协程关闭: ", err.Error())
-		return
+		return nil, err
 	}
 
 	defer resp.Body.Close()
@@ -29,7 +29,7 @@ func ZhiHuBianJi(channel chan <- []*Crawler){
 
 	if err != nil{
 		config.Loggers["zhihu_error"].Println("编辑推荐 刚启动协程就出现错误，协程关闭: ", err.Error())
-		return
+		return nil, err
 	}
 
 	var urlList []string
@@ -45,6 +45,7 @@ func ZhiHuBianJi(channel chan <- []*Crawler){
 	var data []*Crawler
 
 	for i := 1; len(urlList) < 100; i++{
+		time.Sleep(3 * time.Second)
 		offset := ""
 		if(i >= 4){
 			offset = strconv.Itoa(i * 20 - 1)
@@ -66,9 +67,7 @@ func ZhiHuBianJi(channel chan <- []*Crawler){
 			data = append(data, PaserZhihuQuestion(url))
 		}
 	}
-
-
-	channel <- data
+	return data, nil
 }
 
 func nextBianjiPage(offset string, limit string)*goquery.Selection{

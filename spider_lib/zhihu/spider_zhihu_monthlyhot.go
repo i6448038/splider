@@ -11,13 +11,13 @@ import (
 )
 
 
-func ZhihuMonthlyhot(channel chan <- []*Crawler){
+func ZhihuMonthlyhot()([]*Crawler, error){
 	client := &http.Client{}
 	resp, err := client.Get("https://www.zhihu.com/explore#monthly-hot")
 
 	if err != nil{
 		config.Loggers["zhihu_error"].Println("本月最热 刚启动协程就出现错误，协程关闭: ", err.Error())
-		return
+		return nil, err
 	}
 	defer resp.Body.Close()
 
@@ -25,7 +25,7 @@ func ZhihuMonthlyhot(channel chan <- []*Crawler){
 
 	if err != nil{
 		config.Loggers["zhihu_error"].Println("本月最热 刚启动协程就出现错误，协程关闭: ", err.Error())
-		return
+		return nil, err
 	}
 
 	var urlList []string
@@ -39,6 +39,7 @@ func ZhihuMonthlyhot(channel chan <- []*Crawler){
 	})
 
 	for i := 1; len(urlList) < 100; i++{
+		time.Sleep(3 * time.Second)
 		offset := strconv.Itoa(i*5)
 		urlList = RemoveDuplicates(append(urlList, FilterZhihuURLs(ChangeToAbspath(nextMonthPage(offset,urlList), "https://www.zhihu.com"))...))
 	}
@@ -49,7 +50,7 @@ func ZhihuMonthlyhot(channel chan <- []*Crawler){
 		data = append(data, PaserZhihuQuestion(url))
 	}
 
-	channel <- data
+	return data, nil
 }
 
 func nextMonthPage(offset string, data []string)[]string{

@@ -27,11 +27,12 @@ func FilterZhihuURLs(urls []string)[]string{
 
 //解析知乎最主要的问题页
 func PaserZhihuQuestion(url string)*Crawler{
+	time.Sleep(3 * time.Second)
 	client := &http.Client{}
 	resp, err := client.Get(url)
 	if err != nil{
 		config.Loggers["zhihu_error"].Println("解析知乎落地页", url, "出现错误", err.Error(), "等待半分钟，重试！")
-		time.Sleep(20 * time.Second)
+		time.Sleep(30 * time.Second)
 		return PaserZhihuQuestion(url)
 	}
 	defer resp.Body.Close()
@@ -41,7 +42,7 @@ func PaserZhihuQuestion(url string)*Crawler{
 
 	if err != nil{
 		config.Loggers["zhihu_error"].Println("解析知乎落地页", url, "出现错误", err.Error(), "等待半分钟，重试！")
-		time.Sleep(20 * time.Second)
+		time.Sleep(30 * time.Second)
 		return PaserZhihuQuestion(url)
 	}
 
@@ -56,7 +57,7 @@ func PaserZhihuQuestion(url string)*Crawler{
 		Text())
 	if err != nil{
 		config.Loggers["zhihu_error"].Println("解析知乎落地页", url, "出现错误", err.Error(), "等待半分钟，重试！")
-		time.Sleep(20 * time.Second)
+		time.Sleep(30 * time.Second)
 		return PaserZhihuQuestion(url)
 	}
 
@@ -89,7 +90,7 @@ func PaserZhihuQuestion(url string)*Crawler{
 
 	if !isExist{
 		config.Loggers["zhihu_error"].Println("解析知乎落地页出现错误, 选择器相关元素找不到，等待半分钟，重试！")
-		time.Sleep(20 * time.Second)
+		time.Sleep(30 * time.Second)
 		return PaserZhihuQuestion(url)
 	}
 
@@ -101,7 +102,7 @@ func PaserZhihuQuestion(url string)*Crawler{
 
 	if err != nil{
 		config.Loggers["zhihu_error"].Println("解析知乎落地页", url, "出现错误", err.Error(), "等待半分钟，重试！")
-		time.Sleep(20 * time.Second)
+		time.Sleep(30 * time.Second)
 		return PaserZhihuQuestion(url)
 	}
 

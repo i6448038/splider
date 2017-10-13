@@ -14,7 +14,7 @@ import (
 	."net/url"
 )
 
-var topicMap = map[string]string{
+var TopicMap = map[string]string{
 	"游戏":"19550994",
 	"运动":"19552706",
 	"互联网":"19550517",
@@ -43,39 +43,23 @@ var topicMap = map[string]string{
 	"金融":"19609455",
 }
 
-var topicSpecial = map[string]string{
+var TopicSpecial = map[string]string{
 	"投资":"19551404",
 	"创业":"19550560",
 }
 
-func ZhihuTopic(channel chan <- []*Crawler){
+func ZhihuTopic(url string)([]*Crawler, error){
+	var data []*Crawler
 
-	zhihuTopicChannel := make(chan []string)
-
-	for _, v := range topicMap{
-		url := "https://www.zhihu.com/topic/"+ v +"/hot"
-		go crawZhihuTopic(url, zhihuTopicChannel)
+	for _, url := range crawZhihuTopic(url){
+		data = append(data, PaserZhihuQuestion(url))
 	}
-
-	for _, v := range topicSpecial{
-		url := "https://www.zhihu.com/topic/"+ v +"/top-answers"
-		go crawZhihuTopic(url, zhihuTopicChannel)
-	}
-
-	for i:= 0; i < len(topicMap) + len(topicSpecial); i++{
-		var data []*Crawler
-		urls := <-zhihuTopicChannel
-		for _, url := range urls{
-			data = append(data, PaserZhihuQuestion(url))
-		}
-		channel <- data
-	}
-
+	return data, nil
 
 }
 
 func parser(url string)[]string{
-
+	time.Sleep(3 * time.Second)
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
 	req.Close = true
@@ -86,7 +70,7 @@ func parser(url string)[]string{
 	resp, err := client.Do(req)
 	if err != nil{
 		config.Loggers["zhihu_error"].Println("解析知乎垂直专栏", url, "出现错误", err.Error(), "等待半分钟，重试！")
-		time.Sleep(20 * time.Second)
+		time.Sleep(30 * time.Second)
 		return parser(url)
 	}
 
@@ -94,7 +78,7 @@ func parser(url string)[]string{
 
 	if err != nil{
 		config.Loggers["zhihu_error"].Println("解析知乎垂直专栏", url, "出现错误", err.Error(), "等待半分钟，重试！")
-		time.Sleep(20 * time.Second)
+		time.Sleep(30 * time.Second)
 		return parser(url)
 	}
 
@@ -102,7 +86,7 @@ func parser(url string)[]string{
 
 	if err != nil{
 		config.Loggers["zhihu_error"].Println("解析知乎垂直专栏", url, "出现错误", err.Error(), "等待半分钟，重试！")
-		time.Sleep(20 * time.Second)
+		time.Sleep(30 * time.Second)
 		return parser(url)
 	}
 
@@ -113,7 +97,7 @@ func parser(url string)[]string{
 
 	if len(itmes.Nodes) == 0 {
 		config.Loggers["zhihu_error"].Println("解析知乎垂直专栏", url, "出现错误, 可能让输入验证码", "等待半分钟，重试！")
-		time.Sleep(20 * time.Second)
+		time.Sleep(30 * time.Second)
 		return parser(url)
 	}
 
@@ -128,7 +112,7 @@ func parser(url string)[]string{
 	})
 
 	for i := 2; len(urlList) < 100; i++{
-
+		time.Sleep(3 * time.Second)
 		if  inSpecialTopics(url){
 			feedItems = nextSpecial19Page(strconv.Itoa(i), url)
 		}else {
@@ -156,7 +140,7 @@ func next6Page(url string, document *goquery.Selection)*goquery.Selection{
 
 	if !isExist{
 		config.Loggers["zhihu_error"].Println("解析知乎垂直专栏", url, "出现错误, 可能让输入验证码", "等待半分钟，重试！")
-		time.Sleep(20 * time.Second)
+		time.Sleep(30 * time.Second)
 		return next6Page(url, document)
 	}
 
@@ -253,7 +237,7 @@ func nextSpecial19Page(page, url string) *goquery.Selection{
 
 func inSpecialTopics(url string)bool{
 	ret := false
-	for _, v := range topicSpecial{
+	for _, v := range TopicSpecial{
 		if(url == "https://www.zhihu.com/topic/"+ v +"/top-answers"){
 			ret = true
 		}
@@ -262,6 +246,6 @@ func inSpecialTopics(url string)bool{
 }
 
 
-func crawZhihuTopic(url string, channl chan <- []string){
-	channl <- RemoveDuplicates(parser(url))
+func crawZhihuTopic(url string)[]string{
+	return RemoveDuplicates(parser(url))
 }
