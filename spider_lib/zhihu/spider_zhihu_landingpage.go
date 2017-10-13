@@ -26,7 +26,7 @@ func FilterZhihuURLs(urls []string)[]string{
 
 
 //解析知乎最主要的问题页
-func PaserZhihuQuestion(url string)*Crawler{
+func PaserZhihuQuestion(url string)*FreeSpider {
 	time.Sleep(3 * time.Second)
 	client := &http.Client{}
 	resp, err := client.Get(url)
@@ -37,7 +37,7 @@ func PaserZhihuQuestion(url string)*Crawler{
 	}
 	defer resp.Body.Close()
 
-	crawlerData := new(Crawler)
+	crawlerData := new(FreeSpider)
 	body, err := goquery.NewDocumentFromResponse(resp)
 
 	if err != nil{

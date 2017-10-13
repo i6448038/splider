@@ -48,8 +48,8 @@ var TopicSpecial = map[string]string{
 	"创业":"19550560",
 }
 
-func ZhihuTopic(url string)([]*Crawler, error){
-	var data []*Crawler
+func ZhihuTopic(url string)([]*FreeSpider, error){
+	var data []*FreeSpider
 
 	for _, url := range crawZhihuTopic(url){
 		data = append(data, PaserZhihuQuestion(url))

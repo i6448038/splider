@@ -5,7 +5,7 @@ import (
 	."splider/models"
 )
 
-func ParseZhihuTopic(channel chan <- []*Crawler){
+func ParseZhihuTopic(channel chan <- []*FreeSpider){
 	datas, err := ZhiHuBianJi()
 
 	if err != nil{

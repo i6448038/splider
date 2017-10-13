@@ -91,9 +91,9 @@ const (
 	wukong_rankhot_url = "https://www.wukong.com/wenda/web/hotrank/brow/?rank_type=0"
 )
 
-func WukongList(channel chan <- []*Crawler){
+func WukongList(channel chan <- []*FreeSpider){
 
-	var data []*Crawler
+	var data []*FreeSpider
 	wukongChannel := make(chan []string)
 
 	//处理解析结构相同的领域

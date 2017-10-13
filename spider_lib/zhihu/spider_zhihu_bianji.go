@@ -15,7 +15,7 @@ import (
 )
 
 
-func ZhiHuBianJi()([]*Crawler, error){
+func ZhiHuBianJi()([]*FreeSpider, error){
 	client := &http.Client{}
 	resp, err := client.Get("https://www.zhihu.com/explore/recommendations")
 
@@ -42,7 +42,7 @@ func ZhiHuBianJi()([]*Crawler, error){
 		urlList = RemoveDuplicates(FilterZhihuURLs(ChangeToAbspath(urlList, "https://www.zhihu.com")))
 	})
 
-	var data []*Crawler
+	var data []*FreeSpider
 
 	for i := 1; len(urlList) < 100; i++{
 		time.Sleep(3 * time.Second)

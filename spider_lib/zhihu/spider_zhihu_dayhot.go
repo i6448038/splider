@@ -8,7 +8,7 @@ import (
 	"time"
 	"splider/config"
 )
-func ZhihuDayhot()([]*Crawler, error){
+func ZhihuDayhot()([]*FreeSpider, error){
 	doc, err := goquery.NewDocument("https://www.zhihu.com/explore#daily-hot")
 
 	if err != nil{
@@ -32,7 +32,7 @@ func ZhihuDayhot()([]*Crawler, error){
 	}
 
 
-	var data []*Crawler
+	var data []*FreeSpider
 
 	for _, url := range urlList{
 		data = append(data, PaserZhihuQuestion(url))

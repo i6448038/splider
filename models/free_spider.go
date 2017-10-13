@@ -9,11 +9,11 @@ import (
 
 var Engine *xorm.Engine
 
-type Crawler struct {
-	Id  int  `xorm:"autoincr"`
+type FreeSpider struct {
+	Cid  int64  `xorm:"BIGINT(20) pk"`
 	Url string `xorm:"null"`
 	Title string `xorm:"null"`
-	Desc string `xorm:"VARCHAR(3000) null"`
+	Desc string `xorm:"VARCHAR(6000) null"`
 	Img []string `xorm:'[]'`
 	Tags string `xorm:"null"`
 	AnswerCount int `xorm:"null"`
@@ -22,6 +22,7 @@ type Crawler struct {
 	Pv int `xorm:"null"`
 	From int `xorm:"TINYINT(1)"`
 	Ctime time.Time `xorm:"TIMESTAMP created"`
+	Status int `xorm:"TINYINT(1)"`
 }
 
 const ZHIHU = 1
@@ -35,16 +36,16 @@ func init(){
 		panic(err)
 	}
 	engine.SetMaxOpenConns(20)
-	err = engine.Sync2(new(Crawler))
+	err = engine.Sync2(new(FreeSpider))
 	if err != nil{
 		panic(err)
 	}
 	Engine = engine
 }
 
-func SaveToMysql(datas []*Crawler){
+func SaveToMysql(datas []*FreeSpider){
 	for _, data := range datas{
-		crawler := new(Crawler)
+		crawler := new(FreeSpider)
 		Engine.Where("url=?", data.Url).Get(crawler)
 		if crawler.Url == ""{
 			_, err := Engine.InsertOne(data)

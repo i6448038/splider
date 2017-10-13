@@ -11,7 +11,7 @@ import (
 )
 
 
-func ZhihuMonthlyhot()([]*Crawler, error){
+func ZhihuMonthlyhot()([]*FreeSpider, error){
 	client := &http.Client{}
 	resp, err := client.Get("https://www.zhihu.com/explore#monthly-hot")
 
@@ -44,7 +44,7 @@ func ZhihuMonthlyhot()([]*Crawler, error){
 		urlList = RemoveDuplicates(append(urlList, FilterZhihuURLs(ChangeToAbspath(nextMonthPage(offset,urlList), "https://www.zhihu.com"))...))
 	}
 
-	var data []*Crawler
+	var data []*FreeSpider
 
 	for _, url := range urlList{
 		data = append(data, PaserZhihuQuestion(url))

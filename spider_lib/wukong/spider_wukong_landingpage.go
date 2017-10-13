@@ -11,8 +11,8 @@ import (
 )
 
 //解析悟空落地页
-func PaserWukongQuestion(url string)(*Crawler, error){
-	crawlerData := new(Crawler)
+func PaserWukongQuestion(url string)(*FreeSpider, error){
+	crawlerData := new(FreeSpider)
 	body, err := goquery.NewDocument(url)
 
 	if err != nil{

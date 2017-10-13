@@ -15,7 +15,7 @@ func main(){
 		}
 	}()
 
-	channel := make(chan []*Crawler)
+	channel := make(chan []*FreeSpider)
 
 	go ParseZhihuTopic(channel)//5
 
